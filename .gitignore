@@ -1,0 +1,44 @@
+# Dependency Directories
+node_modules/
+.pnpm-store/
+bun.lockb
+package-lock.json
+yarn.lock
+
+# Environment Variables (SANGAT SENSITIF - JANGAN PUSH KE GITHUB)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+.env.*
+
+# SQLite Database & Local Stores (SANGAT SENSITIF)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+sqlite.db
+dev.db
+*.sqlite
+
+# Build Outputs & Dev Caches
+.next/
+out/
+build/
+dist/
+.turbo/
+.cache/
+next-env.d.ts
+
+# OS/Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
