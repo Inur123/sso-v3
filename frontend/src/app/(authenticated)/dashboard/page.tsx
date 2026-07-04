@@ -69,11 +69,7 @@ export default function Dashboard() {
   }
 
   if (!session) {
-    return (
-      <div className="text-center text-slate-500 py-12">
-        Mengalihkan ke halaman login...
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -81,8 +77,8 @@ export default function Dashboard() {
       {/* Welcome Banner */}
       <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 flex items-center">
-            Halo, {session.user.name}! <span className="ml-2">👋</span>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
+            Halo, {session.user.name}! <span className="hidden md:inline-block ml-1">👋</span>
           </h1>
           <p className="text-xs md:text-sm text-slate-600 font-medium max-w-2xl leading-relaxed">
             Selamat datang di beranda utama Portal Layanan Single Sign-On (SSO).
@@ -90,7 +86,7 @@ export default function Dashboard() {
             riwayat seluruh perangkat yang terhubung ke sesi Anda.
           </p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-bold text-lg shrink-0">
+        <div className="hidden md:flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-bold text-lg shrink-0">
           {session.user.name.charAt(0).toUpperCase()}
         </div>
       </div>

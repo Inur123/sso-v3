@@ -162,13 +162,11 @@ export default function ClientsPage() {
 
           {/* Dialog Shadcn UI: Tambah Aplikasi Baru */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger
-              render={
-                <Button className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer flex items-center shadow-sm">
-                  <Plus className="h-4 w-4 mr-1.5" /> Tambah Aplikasi
-                </Button>
-              }
-            />
+            <DialogTrigger asChild>
+              <Button className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer flex items-center shadow-sm">
+                <Plus className="h-4 w-4 mr-1.5" /> Tambah Aplikasi
+              </Button>
+            </DialogTrigger>
             <DialogContent className="bg-white border border-slate-200 shadow-xl max-w-md p-6 rounded-xl">
               <DialogHeader className="space-y-1.5">
                 <DialogTitle className="text-base font-bold text-slate-900">
@@ -249,55 +247,57 @@ export default function ClientsPage() {
               </div>
             ) : (
               <>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-b border-slate-200 bg-slate-50/70">
-                      <TableHead className="w-16 text-center font-bold text-slate-500">
-                        No
-                      </TableHead>
-                      <TableHead className="font-bold text-slate-500">
-                        Nama Aplikasi
-                      </TableHead>
-                      <TableHead className="font-bold text-slate-500">
-                        Redirect URIs
-                      </TableHead>
-                      <TableHead className="w-24 text-center font-bold text-slate-500">
-                        Aksi
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedClients.map((client, index) => {
-                      const actualIndex =
-                        (currentPage - 1) * itemsPerPage + index + 1;
-                      return (
-                        <TableRow
-                          key={client.id}
-                          className="border-b border-slate-100 hover:bg-slate-50/50"
-                        >
-                          <TableCell className="text-center font-medium text-slate-500">
-                            {actualIndex}
-                          </TableCell>
-                          <TableCell className="font-semibold text-slate-900">
-                            {client.name}
-                          </TableCell>
-                          <TableCell className="text-xs text-slate-600">
-                            {client.redirectUris.join(", ")}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Link
-                              href={`/clients/${client.id}`}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
-                              title="Lihat Detail Credentials & Kelola"
-                            >
-                              <Eye className="h-4.5 w-4.5" />
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                <div className="overflow-x-auto w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-slate-200 bg-slate-50/70">
+                        <TableHead className="w-16 text-center font-bold text-slate-500">
+                          No
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500">
+                          Nama Aplikasi
+                        </TableHead>
+                        <TableHead className="font-bold text-slate-500">
+                          Redirect URIs
+                        </TableHead>
+                        <TableHead className="w-24 text-center font-bold text-slate-500">
+                          Aksi
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedClients.map((client, index) => {
+                        const actualIndex =
+                          (currentPage - 1) * itemsPerPage + index + 1;
+                        return (
+                          <TableRow
+                            key={client.id}
+                            className="border-b border-slate-100 hover:bg-slate-50/50"
+                          >
+                            <TableCell className="text-center font-medium text-slate-500">
+                              {actualIndex}
+                            </TableCell>
+                            <TableCell className="font-semibold text-slate-900">
+                              {client.name}
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-600">
+                              {client.redirectUris.join(", ")}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Link
+                                href={`/clients/${client.id}`}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
+                                title="Lihat Detail Kredensial & Kelola"
+                              >
+                                <Eye className="h-4.5 w-4.5" />
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
 
                 {/* Panel Kontrol Pagination Bawaan Shadcn UI */}
                 {clients.length > 0 && (

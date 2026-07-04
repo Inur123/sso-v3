@@ -38,7 +38,7 @@ export function RegisterForm({
         email,
         password,
         name,
-        callbackURL: "/login",
+        callbackURL: `${window.location.origin}/login?verified=true`,
       });
 
       if (registerError) {

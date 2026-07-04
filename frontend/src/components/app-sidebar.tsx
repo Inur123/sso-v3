@@ -14,6 +14,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -36,6 +37,7 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
   const router = useRouter();
   const pathname = usePathname(); // Membaca path rute aktif secara dinamis
   const { data: session } = authClient.useSession();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   // Memanfaatkan prop server-side secara langsung untuk mencegah kedipan/hydration mismatch
   const isAdmin = session ? session.user.email === "admin@gmail.com" : !!serverIsAdmin;
@@ -61,6 +63,12 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
       });
     } catch (err) {
       console.error("Gagal logout:", err);
+    }
+  };
+
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
     }
   };
 
@@ -98,20 +106,26 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
               <SidebarMenu className="space-y-1">
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    render={<Link href="/dashboard" />}
+                    asChild
                     isActive={pathname === "/dashboard"}
+                    onClick={handleMenuClick}
                   >
-                    <LayoutGrid className="h-4 w-4 text-slate-500" />
-                    <span>Dashboard</span>
+                    <Link href="/dashboard">
+                      <LayoutGrid className="h-4 w-4 text-slate-500" />
+                      <span>Dashboard</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    render={<Link href="/clients" />}
+                    asChild
                     isActive={pathname === "/clients" || pathname.includes("/clients/")}
+                    onClick={handleMenuClick}
                   >
-                    <Globe className="h-4 w-4 text-slate-500" />
-                    <span>Aplikasi Terdaftar</span>
+                    <Link href="/clients">
+                      <Globe className="h-4 w-4 text-slate-500" />
+                      <span>Aplikasi Terdaftar</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -127,29 +141,38 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
               <SidebarMenu className="space-y-1">
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    render={<Link href="/dashboard" />}
+                    asChild
                     isActive={pathname === "/dashboard"}
+                    onClick={handleMenuClick}
                   >
-                    <LayoutGrid className="h-4 w-4 text-slate-500" />
-                    <span>Dashboard</span>
+                    <Link href="/dashboard">
+                      <LayoutGrid className="h-4 w-4 text-slate-500" />
+                      <span>Dashboard</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    render={<Link href="/profile" />}
+                    asChild
                     isActive={pathname === "/profile"}
+                    onClick={handleMenuClick}
                   >
-                    <User className="h-4 w-4 text-slate-500" />
-                    <span>Profil Saya</span>
+                    <Link href="/profile">
+                      <User className="h-4 w-4 text-slate-500" />
+                      <span>Profil Saya</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    render={<Link href="/sessions" />}
+                    asChild
                     isActive={pathname === "/sessions"}
+                    onClick={handleMenuClick}
                   >
-                    <History className="h-4 w-4 text-slate-500" />
-                    <span>Riwayat Sesi SSO</span>
+                    <Link href="/sessions">
+                      <History className="h-4 w-4 text-slate-500" />
+                      <span>Riwayat Sesi SSO</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -164,26 +187,24 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
           <SidebarMenu>
             <SidebarMenuItem>
               <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <SidebarMenuButton className="h-12 w-full justify-between px-2 hover:bg-slate-100/70 rounded-md cursor-pointer transition-all">
-                      <div className="flex items-center space-x-3 text-left">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 font-bold text-sm">
-                          {(displayName || "U").charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-bold text-slate-900 truncate">
-                            {displayName}
-                          </span>
-                          <span className="text-[10px] text-slate-400 truncate">
-                            {displayEmail}
-                          </span>
-                        </div>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton className="h-12 w-full justify-between px-2 hover:bg-slate-100/70 rounded-md cursor-pointer transition-all">
+                    <div className="flex items-center space-x-3 text-left">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 font-bold text-sm">
+                        {(displayName || "U").charAt(0).toUpperCase()}
                       </div>
-                      <ChevronUp className="h-4 w-4 text-slate-400" />
-                    </SidebarMenuButton>
-                  }
-                />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-slate-900 truncate">
+                          {displayName}
+                        </span>
+                        <span className="text-[10px] text-slate-400 truncate">
+                          {displayEmail}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronUp className="h-4 w-4 text-slate-400" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
                 <DropdownMenuContent
                   side="top"
                   align="center"
@@ -199,7 +220,10 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
                   </div>
                   <DropdownMenuItem
                     className="flex items-center space-x-2 px-2.5 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer transition-colors"
-                    onClick={() => router.push("/profile")}
+                    onClick={() => {
+                      router.push("/profile");
+                      handleMenuClick();
+                    }}
                   >
                     <User className="h-3.5 w-3.5" />
                     <span>Profil Akun</span>

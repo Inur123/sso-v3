@@ -35,9 +35,15 @@ export function LoginForm({
   // Efek untuk memantau notifikasi register sukses dan logout sukses dari URL params / sessionStorage
   useEffect(() => {
     const registered = searchParams.get("registered");
+    const verified = searchParams.get("verified");
 
     if (registered === "true") {
-      toast.success("Pendaftaran berhasil! Silakan masuk dengan akun Anda.");
+      toast.info("Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk melakukan verifikasi akun sebelum masuk.");
+      window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
+    }
+
+    if (verified === "true") {
+      toast.success("Email Anda berhasil terverifikasi! Silakan masuk dengan akun Anda.");
       window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
     }
 

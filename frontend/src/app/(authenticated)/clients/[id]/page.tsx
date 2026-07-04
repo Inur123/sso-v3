@@ -276,16 +276,14 @@ export default function ClientDetailPage({
                 </p>
               </div>
               <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <Button
-                      variant="destructive"
-                      className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold cursor-pointer shrink-0"
-                    >
-                      <Trash className="h-4 w-4 mr-1.5" /> Hapus Aplikasi
-                    </Button>
-                  }
-                />
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold cursor-pointer shrink-0"
+                  >
+                    <Trash className="h-4 w-4 mr-1.5" /> Hapus Aplikasi
+                  </Button>
+                </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white border border-slate-200">
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-slate-900 font-bold">

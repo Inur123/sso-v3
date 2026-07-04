@@ -54,14 +54,12 @@ export default async function DashboardLayout({
     <SidebarProvider>
       <AppSidebar serverIsAdmin={isAdmin} serverUser={sessionUser} />
       <SidebarInset className="bg-slate-50">
-        {/* Top Navbar Persisten */}
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-6">
+        {/* Top Navbar Persisten (Sticky & Glassmorphism) */}
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 backdrop-blur-md px-6">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="cursor-pointer" />
-            <div className="h-4 w-px bg-slate-200" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <ActiveHeaderTitle isAdmin={isAdmin} />
-            </span>
+            <SidebarTrigger className="md:hidden cursor-pointer" />
+            <div className="h-4 w-px bg-slate-200 md:hidden" />
+            <ActiveHeaderTitle isAdmin={isAdmin} />
           </div>
         </header>
 

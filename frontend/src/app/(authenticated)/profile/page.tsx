@@ -87,36 +87,53 @@ export default function ProfilePage() {
     setProfileLoading(true);
     setProfileError(null);
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-
     try {
-      const response = await fetch(`${API_URL}/api/user/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.session?.token}`,
-        },
-        body: JSON.stringify({
+      const nameChanged = editName !== session?.user?.name;
+      const emailChanged = editEmail !== session?.user?.email;
+
+      // 1. Perbarui nama lengkap jika berubah
+      if (nameChanged) {
+        const { error: nameError } = await authClient.updateUser({
           name: editName,
-          email: editEmail,
-        }),
-      });
+        });
 
-      if (response.ok) {
-        toast.success("Profil berhasil diperbarui!");
-        setIsProfileOpen(false);
-        // Refresh local cache name & email
+        if (nameError) {
+          setProfileError(nameError.message || "Gagal memperbarui nama.");
+          setProfileLoading(false);
+          return;
+        }
         localStorage.setItem("sso_user_name", editName);
-        localStorage.setItem("sso_user_email", editEmail);
-
-        // Paksa reload halaman sesaat agar session terupdate mutlak
-        window.location.reload();
-      } else {
-        const data = await response.json();
-        setProfileError(data.error || "Gagal memperbarui profil.");
       }
+
+      // 2. Jika email diubah, pemicu verifikasi changeEmail Better Auth
+      if (emailChanged) {
+        const { error: emailError } = await authClient.changeEmail({
+          newEmail: editEmail,
+          callbackURL: `${window.location.origin}/profile`,
+        });
+
+        if (emailError) {
+          setProfileError(emailError.message || "Gagal memicu perubahan email.");
+          setProfileLoading(false);
+          return;
+        }
+
+        toast.success("Permintaan ganti email terkirim! Silakan periksa inbox email baru Anda untuk konfirmasi.");
+      } else if (nameChanged) {
+        toast.success("Profil berhasil diperbarui!");
+      }
+
+      setIsProfileOpen(false);
+
+      // Hanya reload jika nama berubah untuk menyegarkan tampilan nama di sidebar
+      if (nameChanged) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+
     } catch {
-      setProfileError("Gagal menghubungkan ke backend API.");
+      setProfileError("Gagal memproses permintaan pembaruan.");
     } finally {
       setProfileLoading(false);
     }
@@ -163,11 +180,7 @@ export default function ProfilePage() {
   }
 
   if (!session) {
-    return (
-      <div className="text-center text-slate-500 py-12">
-        Mengalihkan ke halaman login...
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -176,7 +189,7 @@ export default function ProfilePage() {
         {/* Kartu Detail Profil */}
         <Card className="border border-slate-200 bg-white shadow-sm md:col-span-2 flex flex-col justify-between">
           <div>
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-slate-50/50 py-4">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 bg-slate-50/50 py-4">
               <div className="flex items-center space-x-3">
                 <User className="h-5 w-5 text-indigo-600" />
                 <CardTitle className="text-sm font-semibold">
@@ -184,24 +197,21 @@ export default function ProfilePage() {
                 </CardTitle>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="w-full grid grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-2">
                 {/* Dialog 1: Ubah Informasi Profil */}
                 <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-                  <DialogTrigger
-                    render={
-                      <Button className="h-8 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-800 text-xs font-semibold px-3 rounded-lg cursor-pointer flex items-center shadow-none border-none">
-                        <Edit2 className="h-3.5 w-3.5 mr-1.5" /> Ubah Profil
-                      </Button>
-                    }
-                  />
+                  <DialogTrigger asChild>
+                    <Button className="h-8 w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-800 text-xs font-semibold px-3 rounded-lg cursor-pointer flex items-center justify-center shadow-none border-none">
+                      <Edit2 className="h-3.5 w-3.5 mr-1.5 shrink-0" /> <span className="truncate">Ubah Profil</span>
+                    </Button>
+                  </DialogTrigger>
                   <DialogContent className="bg-white border border-slate-200 shadow-xl max-w-md p-6 rounded-xl">
                     <DialogHeader className="space-y-1.5">
                       <DialogTitle className="text-base font-bold text-slate-900">
                         Perbarui Informasi Profil
                       </DialogTitle>
                       <DialogDescription className="text-xs text-slate-400">
-                        Ubah detail nama lengkap dan alamat email akun SSO Anda
-                        di bawah ini.
+                        Ubah detail nama lengkap dan alamat email akun SSO Anda di bawah ini.
                       </DialogDescription>
                     </DialogHeader>
 
@@ -210,9 +220,8 @@ export default function ProfilePage() {
                       className="space-y-4 pt-3"
                     >
                       {profileError && (
-                        <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-2.5 rounded-lg text-xs font-medium border border-red-100">
-                          <ShieldAlert className="h-4 w-4 shrink-0" />
-                          <span>{profileError}</span>
+                        <div className="rounded-lg bg-red-50 p-3 text-red-600 font-medium">
+                          {profileError}
                         </div>
                       )}
 
@@ -222,9 +231,9 @@ export default function ProfilePage() {
                         </label>
                         <input
                           type="text"
-                          className="w-full text-xs border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
+                          className="w-full text-xs border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white"
                         />
                       </div>
 
@@ -234,9 +243,9 @@ export default function ProfilePage() {
                         </label>
                         <input
                           type="email"
-                          className="w-full text-xs border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white"
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
+                          className="w-full text-xs border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white"
                         />
                       </div>
 
@@ -257,8 +266,7 @@ export default function ProfilePage() {
                         >
                           {profileLoading ? (
                             <>
-                              <Loader2 className="h-3 w-3 animate-spin mr-1.5" />{" "}
-                              Loading...
+                              <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> Loading...
                             </>
                           ) : (
                             "Simpan"
@@ -271,14 +279,11 @@ export default function ProfilePage() {
 
                 {/* Dialog 2: Ganti Password */}
                 <Dialog open={isPasswordOpen} onOpenChange={setIsPasswordOpen}>
-                  <DialogTrigger
-                    render={
-                      <Button className="h-8 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 rounded-lg cursor-pointer flex items-center shadow-sm">
-                        <KeyRound className="h-3.5 w-3.5 mr-1.5" /> Ganti
-                        Password
-                      </Button>
-                    }
-                  />
+                  <DialogTrigger asChild>
+                    <Button className="h-8 w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 rounded-lg cursor-pointer flex items-center justify-center shadow-none border-none">
+                      <KeyRound className="h-3.5 w-3.5 mr-1.5 shrink-0" /> <span className="truncate">Ganti Password</span>
+                    </Button>
+                  </DialogTrigger>
                   <DialogContent className="bg-white border border-slate-200 shadow-xl max-w-md p-6 rounded-xl">
                     <DialogHeader className="space-y-1.5">
                       <DialogTitle className="text-base font-bold text-slate-900">

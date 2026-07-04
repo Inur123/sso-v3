@@ -17,7 +17,7 @@ export function DashboardSkeleton() {
           </div>
         </div>
         {/* Bulatan Avatar Kanan */}
-        <div className="h-12 w-12 bg-indigo-100/80 rounded-xl shrink-0" />
+        <div className="hidden md:block h-12 w-12 bg-indigo-100/80 rounded-xl shrink-0" />
       </div>
 
       {/* Grid Dua Kartu Statistik Skeleton */}
