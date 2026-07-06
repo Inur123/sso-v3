@@ -26,7 +26,7 @@ fastify.register(helmet, {
 fastify.register(cors, {
   origin: true, // Dinamis atau bisa diatur spesifik domain frontend nantinya
   credentials: true, // Mengizinkan pengiriman cookie session
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 });
 
 // Registrasi Rate Limiter (Proteksi DDoS / Brute Force)
@@ -66,6 +66,26 @@ fastify.route({
     });
 
     const response = await auth.handler(webReq);
+
+    // Deteksi jika OAuth callback menghasilkan error akun dinonaktifkan, lalu redirect ke frontend
+    if (request.url.includes("/api/auth/callback/")) {
+      const responseStatus = response.status;
+      if (responseStatus >= 400) {
+        try {
+          const clonedResponse = response.clone();
+          const bodyText = await clonedResponse.text();
+          if (bodyText.includes("Akun Anda telah dinonaktifkan oleh administrator")) {
+            const frontendUrl = process.env.TRUSTED_ORIGINS
+              ? process.env.TRUSTED_ORIGINS.split(",")[0]
+              : "http://localhost:3000";
+            const encodedMessage = encodeURIComponent("Akun Anda telah dinonaktifkan oleh administrator.");
+            return reply.redirect(`${frontendUrl}/login?error=${encodedMessage}`);
+          }
+        } catch (e) {
+          fastify.log.error(e, "Error cloning auth response");
+        }
+      }
+    }
 
     reply.status(response.status);
     response.headers.forEach((value, key) => {

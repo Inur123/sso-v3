@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ClipboardList, Eye } from "lucide-react";
+import { ClipboardList, Eye, X, ChevronDown, Check } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { AuditLogsSkeleton } from "./skeleton";
@@ -32,34 +33,44 @@ interface AuditLog {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 const ADMIN_TOKEN = "admin-super-secret-token";
 
+const ALL_ACTIONS = [
+  "user.login",
+  "user.logout",
+  "user.signup",
+  "user.activated",
+  "user.deactivated",
+  "user.deleted",
+  "client.created",
+  "client.deleted",
+  "system.init",
+];
+
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Log audit lebih bagus tampil 10 per halaman
+  const itemsPerPage = 10;
+
+  // --- Filter states ---
+  const [actionFilter, setActionFilter] = useState("all");
+  const [userFilter, setUserFilter] = useState("all");
+
+  // Combobox user open/search state
+  const [userOpen, setUserOpen] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
 
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-
   const isAdmin = session?.user?.email === "admin@gmail.com";
-
-  const totalPages = Math.ceil(logs.length / itemsPerPage);
-  const paginatedLogs = logs.slice(
-    (currentPage - 1) * itemsPerPage,
-    (currentPage - 1) * itemsPerPage + itemsPerPage,
-  );
 
   const fetchLogs = useCallback(async () => {
     if (!isAdmin) return;
     setLoading(true);
-
     try {
       const response = await fetch(`${API_URL}/api/admin/audit-logs`, {
-        headers: {
-          Authorization: `Bearer ${ADMIN_TOKEN}`,
-        },
+        headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
       });
       if (response.ok) {
         const data = await response.json();
@@ -79,48 +90,99 @@ export default function AuditLogsPage() {
     if (!isPending && !session) {
       router.push("/login");
     } else if (!isPending && session) {
-      if (!isAdmin) {
-        router.push("/dashboard");
-      } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchLogs();
-      }
+      if (!isAdmin) router.push("/dashboard");
+      else fetchLogs();
     }
   }, [session, isPending, isAdmin, fetchLogs, router]);
 
-  // Helper untuk mewarnai badge Aksi Log agar lebih informatif (mengembalikan JSX Span)
+  // Helper untuk mendapatkan label pelaku dari log entry
+  const getActor = (log: AuditLog): string => {
+    const emailMatch = log.metadata?.match(/\(([^)]+@[^)]+)\)/);
+    if (log.userEmail) return log.userEmail;
+    if (emailMatch) return emailMatch[1];
+    return "Sistem / Admin API";
+  };
+
+  // Daftar unik user pelaku dari semua log
+  const uniqueUsers = useMemo(() => {
+    const set = new Set<string>();
+    logs.forEach((log) => set.add(getActor(log)));
+    return Array.from(set).sort();
+  }, [logs]);
+
+  // Hasil filter combobox user berdasar pencarian
+  const filteredUserOptions = useMemo(() => {
+    if (!userSearch) return uniqueUsers;
+    return uniqueUsers.filter((u) =>
+      u.toLowerCase().includes(userSearch.toLowerCase()),
+    );
+  }, [uniqueUsers, userSearch]);
+
+  // Log setelah difilter
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      const matchesAction =
+        actionFilter === "all" || log.action === actionFilter;
+      const matchesUser = userFilter === "all" || getActor(log) === userFilter;
+      return matchesAction && matchesUser;
+    });
+  }, [logs, actionFilter, userFilter]);
+
+  const isFiltered = actionFilter !== "all" || userFilter !== "all";
+
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  // Reset page saat filter berubah
+  const handleActionFilter = (val: string) => {
+    setActionFilter(val);
+    setCurrentPage(1);
+  };
+  const handleUserFilter = (val: string) => {
+    setUserFilter(val);
+    setUserOpen(false);
+    setUserSearch("");
+    setCurrentPage(1);
+  };
+  const handleReset = () => {
+    setActionFilter("all");
+    setUserFilter("all");
+    setUserSearch("");
+    setCurrentPage(1);
+  };
+
+  // Helper badge aksi log
   const getActionBadge = (action: string) => {
-    const baseClass =
+    const base =
       "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase border";
     switch (action) {
       case "client.created":
         return (
           <span
-            className={`${baseClass} bg-green-50 text-green-700 border-green-200`}
+            className={`${base} bg-green-50 text-green-700 border-green-200`}
           >
             {action}
           </span>
         );
       case "client.deleted":
         return (
-          <span
-            className={`${baseClass} bg-red-50 text-red-700 border-red-200`}
-          >
+          <span className={`${base} bg-red-50 text-red-700 border-red-200`}>
             {action}
           </span>
         );
       case "user.signup":
         return (
-          <span
-            className={`${baseClass} bg-blue-50 text-blue-700 border-blue-200`}
-          >
+          <span className={`${base} bg-blue-50 text-blue-700 border-blue-200`}>
             {action}
           </span>
         );
       case "user.login":
         return (
           <span
-            className={`${baseClass} bg-indigo-50 text-indigo-700 border-indigo-200`}
+            className={`${base} bg-indigo-50 text-indigo-700 border-indigo-200`}
           >
             {action}
           </span>
@@ -128,15 +190,37 @@ export default function AuditLogsPage() {
       case "user.logout":
         return (
           <span
-            className={`${baseClass} bg-amber-50 text-amber-700 border-amber-200`}
+            className={`${base} bg-amber-50 text-amber-700 border-amber-200`}
           >
+            {action}
+          </span>
+        );
+      case "user.activated":
+        return (
+          <span
+            className={`${base} bg-emerald-50 text-emerald-700 border-emerald-200`}
+          >
+            {action}
+          </span>
+        );
+      case "user.deactivated":
+        return (
+          <span
+            className={`${base} bg-orange-50 text-orange-700 border-orange-200`}
+          >
+            {action}
+          </span>
+        );
+      case "user.deleted":
+        return (
+          <span className={`${base} bg-rose-50 text-rose-700 border-rose-200`}>
             {action}
           </span>
         );
       case "system.init":
         return (
           <span
-            className={`${baseClass} bg-purple-50 text-purple-700 border-purple-200`}
+            className={`${base} bg-purple-50 text-purple-700 border-purple-200`}
           >
             {action}
           </span>
@@ -144,7 +228,7 @@ export default function AuditLogsPage() {
       default:
         return (
           <span
-            className={`${baseClass} bg-slate-50 text-slate-700 border-slate-200`}
+            className={`${base} bg-slate-50 text-slate-700 border-slate-200`}
           >
             {action}
           </span>
@@ -152,28 +236,136 @@ export default function AuditLogsPage() {
     }
   };
 
-  if (isPending || loading) {
-    return <AuditLogsSkeleton />;
-  }
-
-  if (!isAdmin) {
-    return null; // Pengguna akan diredirect oleh useEffect
-  }
+  if (isPending || loading) return <AuditLogsSkeleton />;
+  if (!isAdmin) return null;
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
-            <ClipboardList className="h-5.5 w-5.5 text-indigo-600" />
-            <span>Log Audit Aktivitas</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Pantau seluruh aktivitas otentikasi pengguna dan manipulasi data
-            klien SSO secara real-time.
-          </p>
-        </div>
+      {/* Header */}
+      <div>
+        <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
+          <ClipboardList className="h-5.5 w-5.5 text-indigo-600" />
+          <span>Log Audit Aktivitas</span>
+        </h2>
+        <p className="text-xs text-slate-500 mt-1">
+          Pantau seluruh aktivitas otentikasi pengguna dan manipulasi data klien
+          SSO secara real-time.
+        </p>
       </div>
+
+      {/* ── Filter Bar ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
+        {/* Filter Aksi */}
+        <div className="relative flex-1">
+          <select
+            id="action-filter"
+            value={actionFilter}
+            onChange={(e) => handleActionFilter(e.target.value)}
+            className="w-full h-[38px] pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer transition-colors hover:border-slate-300"
+          >
+            <option value="all">Semua Aksi</option>
+            {ALL_ACTIONS.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+        </div>
+
+        {/* Filter User / Pelaku — Combobox dengan search */}
+        <div className="relative flex-1">
+          <button
+            id="user-filter-btn"
+            type="button"
+            onClick={() => {
+              setUserOpen((v) => !v);
+              setUserSearch("");
+            }}
+            className="w-full h-[38px] pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer transition-colors hover:border-slate-300 flex items-center text-left"
+          >
+            <span
+              className={
+                userFilter === "all" ? "text-slate-400" : "text-slate-700"
+              }
+            >
+              {userFilter === "all" ? "Semua User / Pelaku" : userFilter}
+            </span>
+          </button>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+
+          {/* Dropdown combobox */}
+          {userOpen && (
+            <div className="absolute z-50 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg overflow-hidden">
+              {/* Search input */}
+              <div className="p-2 border-b border-slate-100">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Cari user..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  className="w-full h-8 px-2.5 rounded-md border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                />
+              </div>
+              {/* Options */}
+              <ul className="max-h-52 overflow-y-auto py-1">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleUserFilter("all")}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer text-slate-600"
+                  >
+                    <Check
+                      className={`h-3.5 w-3.5 ${userFilter === "all" ? "text-indigo-600" : "invisible"}`}
+                    />
+                    Semua User / Pelaku
+                  </button>
+                </li>
+                {filteredUserOptions.length === 0 && (
+                  <li className="px-3 py-3 text-xs text-slate-400 text-center">
+                    Tidak ditemukan
+                  </li>
+                )}
+                {filteredUserOptions.map((u) => (
+                  <li key={u}>
+                    <button
+                      type="button"
+                      onClick={() => handleUserFilter(u)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer text-slate-700"
+                    >
+                      <Check
+                        className={`h-3.5 w-3.5 shrink-0 ${userFilter === u ? "text-indigo-600" : "invisible"}`}
+                      />
+                      <span className="truncate">{u}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Tombol Reset X */}
+        <Button
+          id="reset-filter-btn"
+          variant="outline"
+          onClick={handleReset}
+          disabled={!isFiltered}
+          className="h-[38px] w-[38px] p-0 shrink-0 rounded-lg border-slate-200 hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-40 cursor-pointer"
+          title="Reset Filter"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Tutup combobox saat klik luar */}
+      {userOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setUserOpen(false)}
+        />
+      )}
 
       {error ? (
         <Card className="border border-red-200 bg-red-50/50 p-6 rounded-xl">
@@ -185,13 +377,20 @@ export default function AuditLogsPage() {
         <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
           <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4">
             <CardTitle className="text-sm font-semibold text-slate-800">
-              Histori Aktivitas Sistem & User
+              Histori Aktivitas Sistem &amp; User
+              {isFiltered && (
+                <span className="ml-2 text-[10px] font-normal text-slate-400">
+                  ({filteredLogs.length} dari {logs.length} log)
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {logs.length === 0 ? (
+            {filteredLogs.length === 0 ? (
               <div className="text-center text-slate-500 py-12 text-xs">
-                Belum ada aktivitas yang tercatat.
+                {isFiltered
+                  ? "Tidak ada log yang sesuai dengan filter."
+                  : "Belum ada aktivitas yang tercatat."}
               </div>
             ) : (
               <>
@@ -226,9 +425,7 @@ export default function AuditLogsPage() {
                           dateStyle: "medium",
                           timeStyle: "short",
                         });
-                        const actor = log.userEmail
-                          ? `${log.userName || "User"} (${log.userEmail})`
-                          : "Sistem / Admin API";
+                        const actor = getActor(log);
 
                         return (
                           <TableRow
@@ -246,12 +443,14 @@ export default function AuditLogsPage() {
                               {actor}
                             </TableCell>
                             <TableCell className="text-center">
-                              <Link
-                                href={`/audit-logs/${log.id}`}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
-                                title="Lihat Detail Log Audit"
-                              >
-                                <Eye className="h-4.5 w-4.5" />
+                              <Link href={`/audit-logs/${log.id}`}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 rounded-lg cursor-pointer hover:bg-indigo-50 hover:text-indigo-600"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
                               </Link>
                             </TableCell>
                           </TableRow>
@@ -261,21 +460,27 @@ export default function AuditLogsPage() {
                   </Table>
                 </div>
 
-                {/* Panel Kontrol Pagination Bawaan Shadcn UI */}
-                {logs.length > 0 && (
+                {/* Pagination */}
+                {filteredLogs.length > 0 && (
                   <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/30">
                     <div className="text-xs text-slate-500">
                       Menampilkan{" "}
                       <span className="font-bold text-slate-700">
-                        {(currentPage - 1) * itemsPerPage + 1}
+                        {Math.min(
+                          (currentPage - 1) * itemsPerPage + 1,
+                          filteredLogs.length,
+                        )}
                       </span>{" "}
                       sampai{" "}
                       <span className="font-bold text-slate-700">
-                        {Math.min(currentPage * itemsPerPage, logs.length)}
+                        {Math.min(
+                          currentPage * itemsPerPage,
+                          filteredLogs.length,
+                        )}
                       </span>{" "}
                       dari{" "}
                       <span className="font-bold text-slate-700">
-                        {logs.length}
+                        {filteredLogs.length}
                       </span>{" "}
                       log aktivitas
                     </div>
@@ -284,7 +489,7 @@ export default function AuditLogsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          setCurrentPage((p) => Math.max(p - 1, 1))
                         }
                         disabled={currentPage === 1}
                         className="h-8 text-xs cursor-pointer px-2.5"
@@ -299,7 +504,7 @@ export default function AuditLogsPage() {
                           }
                           size="sm"
                           onClick={() => setCurrentPage(idx + 1)}
-                          className={`h-8 w-8 text-xs cursor-pointer`}
+                          className="h-8 w-8 text-xs cursor-pointer"
                         >
                           {idx + 1}
                         </Button>
@@ -308,9 +513,7 @@ export default function AuditLogsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(prev + 1, totalPages),
-                          )
+                          setCurrentPage((p) => Math.min(p + 1, totalPages))
                         }
                         disabled={
                           currentPage === totalPages || totalPages === 0

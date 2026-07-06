@@ -116,7 +116,7 @@ Bagian ini merekam fitur-fitur baru dan optimalisasi stabilitas UI/UX yang telah
 
 ---
 
-## 🟢 BAGIAN 5: LOGIN & REGISTER SOSIAL GOOGLE (Sudah Selesai Dikerjakan)
+## 🟢 BAGIAN 22: LOGIN & REGISTER SOSIAL GOOGLE (Sudah Selesai Dikerjakan)
 
 ### Langkah 21: Pendaftaran Kredensial (Google Cloud Console)
 *   Membuat kredensial OAuth Client ID dengan tipe *Web Application* di Google Cloud Console.
@@ -127,3 +127,34 @@ Bagian ini merekam fitur-fitur baru dan optimalisasi stabilitas UI/UX yang telah
 *   **Backend:** Menambahkan konfigurasi `socialProviders.google` pada berkas `backend/src/auth.ts` untuk memproses autentikasi Google OAuth.
 *   **Frontend:** Menambahkan tombol "Google" lebar penuh (*full-width*) di halaman login dan register, serta menghapus integrasi login GitHub demi kebersihan visual (eksklusif masuk lewat akun Google).
 *   **Koreksi Lokalisasi:** Menerjemahkan error login bahasa Inggris menjadi `"Email atau password tidak sesuai"` demi pengalaman pengguna lokal yang optimal.
+
+---
+
+## 🟢 BAGIAN 23: TEMPLATE EMAIL HTML PREMIUM & BATASAN WAKTU TOKEN KUSTOM (Sudah Selesai Dikerjakan)
+
+### Langkah 23: Desain Template HTML Dinamis
+*   Menambahkan fungsi pembangun email HTML kustom `buildHtmlEmail` dengan arsitektur responsif, skema warna Indigo modern, tombol aksi, dan deteksi batasan waktu token secara dinamis (`expiresInText`).
+
+### Langkah 24: Kustomisasi Waktu Kedaluwarsa Token Keamanan (Backend)
+*   **Token Reset Password:** Mengatur `passwordResetTokenExpiresIn: 300` (kedaluwarsa dalam **5 menit** untuk proteksi maksimal).
+*   **Token Verifikasi & Perubahan Email:** Mengatur `expiresIn: 3600` (kedaluwarsa dalam **1 jam** untuk keamanan yang seimbang).
+
+---
+
+## 🟢 BAGIAN 24: MANAJEMEN USER BERBASIS KOLOM ROLE DATABASE (Sudah Selesai Dikerjakan)
+
+### Langkah 25: Migrasi Kolom Role di Skema Database
+*   **Tabel User:** Menambahkan kolom `role: text("role").default("user").notNull()` di `schema.ts`.
+*   **Better Auth Config:** Mendaftarkan additionalFields `role` di `auth.ts` agar diserialisasikan otomatis ke client SDK.
+*   **Seeder Database:** Memperbarui `seed.ts` agar menetapkan `role: "admin"` untuk pengguna admin `admin@gmail.com`.
+*   **Push Migrasi:** Menjalankan perintah `drizzle-kit push` menggunakan Bun untuk menerapkan perubahan pada PostgreSQL lokal.
+
+### Langkah 26: API Routing & Dashboard Counter (Backend)
+*   **API Daftar User:** Menambahkan endpoint `GET /api/admin/users` yang mengembalikan semua user yang bertipe `role: "user"` saja (admin dieliminasi).
+*   **API Detail User:** Menambahkan `GET /api/admin/users/:id` untuk detail data profil user tunggal.
+*   **Dashboard Counter:** Mengubah `GET /api/admin/users/count` agar hanya menghitung user biasa (`role: "user"`).
+
+### Langkah 27: Halaman Frontend & Skeleton Loading (Frontend)
+*   **Halaman Utama (`/users`):** Membuat tabel daftar user dengan pencarian, pagination, loader skeleton shimmer (`skeleton.tsx`), dan navigasi aksi. Sesuai instruksi user, breadcrumbs lokal pada halaman utama dihilangkan.
+*   **Halaman Detail (`/users/[id]`):** Menampilkan profil detail pengguna lengkap dengan remah roti lokal `"Portal / Pengguna Terdaftar / Detail Profil"`.
+*   **ESLint Fix (no-explicit-any):** Menghilangkan semua casting `as any` pada berkas halaman pengguna dan sidebar, serta menggantinya dengan casting tipe data kustom `{ role?: string }` untuk menyelesaikan garis merah analisis kode VS Code.

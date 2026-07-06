@@ -164,9 +164,12 @@ export default function AuditLogDetailPage({
     timeStyle: "medium",
   });
 
+  const emailMatch = log.metadata?.match(/\(([^)]+@[^)]+)\)/);
   const actor = log.userEmail
     ? `${log.userName || "User"} (${log.userEmail})`
-    : "Sistem / Admin API";
+    : emailMatch
+      ? emailMatch[1]
+      : "Sistem / Admin API";
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { History, Eye, EyeOff } from "lucide-react";
+import { History, Eye, EyeOff, ShieldAlert } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { SessionsSkeleton } from "./skeleton";
 
@@ -139,6 +139,10 @@ export default function SessionsPage() {
   }
 
   if (!session || isAdmin) return null;
+
+  function handleRevoke(selectedLogId: string) {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
@@ -303,42 +307,47 @@ export default function SessionsPage() {
         </CardContent>
       </Card>
 
-      {/* Dialog Konfirmasi Cabut Akses Kustom */}
       <Dialog open={isRevoking} onOpenChange={setIsRevoking}>
         <DialogContent
           showCloseButton={false}
-          className="bg-white border border-slate-200"
+          className="bg-white border border-slate-200 max-w-[400px] rounded-xl p-6 shadow-xl"
         >
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 font-bold">
-              Apakah Anda yakin?
+          <DialogHeader className="flex flex-col items-center text-center sm:items-center sm:text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600 border border-red-100">
+              <ShieldAlert className="h-5 w-5" />
+            </div>
+            <DialogTitle className="text-sm font-bold text-slate-900">
+              Cabut Akses Sesi Aplikasi?
             </DialogTitle>
-            <DialogDescription className="text-slate-500">
+            <DialogDescription className="text-xs text-slate-500 leading-relaxed mt-2">
               Apakah Anda yakin ingin memutuskan sesi dan mencabut akses untuk
-              aplikasi &quot;{selectedLogName}&quot;? Anda harus masuk kembali
-              ke aplikasi tersebut untuk menggunakan layanan SSO.
+              aplikasi{" "}
+              <strong className="text-slate-700">
+                &quot;{selectedLogName}&quot;
+              </strong>
+              ? Anda harus masuk kembali ke aplikasi tersebut untuk menggunakan
+              layanan SSO.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="grid grid-cols-2 gap-2 mt-5">
             <DialogClose asChild>
               <Button
                 variant="outline"
-                className="border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer text-xs"
+                className="w-full text-xs font-semibold h-9 rounded-md border border-slate-200 hover:bg-slate-50 cursor-pointer"
               >
                 Batal
               </Button>
             </DialogClose>
             <Button
               variant="destructive"
-              className="bg-red-600 hover:bg-red-700 text-white cursor-pointer text-xs font-semibold"
+              className="w-full text-xs font-semibold h-9 rounded-md cursor-pointer"
               onClick={() => {
                 if (selectedLogId) {
                   handleRevokeClient(selectedLogId);
-                  setIsRevoking(false);
                 }
               }}
             >
-              Cabut Akses
+              Ya, Cabut Akses
             </Button>
           </DialogFooter>
         </DialogContent>

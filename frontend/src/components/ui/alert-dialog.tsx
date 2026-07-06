@@ -140,15 +140,22 @@ AlertDialogDescription.displayName =
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
+    variant?: React.ComponentProps<typeof Button>["variant"]
+    size?: React.ComponentProps<typeof Button>["size"]
+  }
+>(({ className, variant = "default", size = "default", children, ...props }, ref) => (
   <AlertDialogPrimitive.Action
     ref={ref}
     asChild
     data-slot="alert-dialog-action"
     className={cn(className)}
     {...props}
-  />
+  >
+    <Button variant={variant} size={size}>
+      {children}
+    </Button>
+  </AlertDialogPrimitive.Action>
 ))
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
 

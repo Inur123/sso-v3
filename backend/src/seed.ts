@@ -27,9 +27,9 @@ async function main() {
     console.log("✔ Admin sukses didaftarkan!");
 
     // 3. Verifikasi email admin secara otomatis di database agar bisa langsung login
-    console.log("🔑 Memverifikasi email admin secara otomatis...");
-    await db.update(user).set({ emailVerified: true }).where(eq(user.email, "admin@gmail.com"));
-    console.log("✔ Email admin berhasil diverifikasi!");
+    console.log("🔑 Memverifikasi email dan menyetel role admin...");
+    await db.update(user).set({ emailVerified: true, role: "admin" }).where(eq(user.email, "admin@gmail.com"));
+    console.log("✔ Email dan role admin berhasil disetel!");
 
     // 4. Tambah Audit Log awal (Simulasi aktivitas sistem)
     console.log("📝 Menambahkan data audit log awal...");

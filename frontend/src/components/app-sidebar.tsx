@@ -40,7 +40,7 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   // Memanfaatkan prop server-side secara langsung untuk mencegah kedipan/hydration mismatch
-  const isAdmin = session ? session.user.email === "admin@gmail.com" : !!serverIsAdmin;
+  const isAdmin = session ? ((session.user as { role?: string }).role === "admin" || session.user.email === "admin@gmail.com") : !!serverIsAdmin;
   const displayName = session ? session.user.name : (serverUser?.name || "");
   const displayEmail = session ? session.user.email : (serverUser?.email || "");
 
@@ -137,6 +137,18 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
                     <Link href="/audit-logs">
                       <ClipboardList className="h-4 w-4 text-slate-500" />
                       <span>Log Audit</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/users" || pathname.includes("/users/")}
+                    onClick={handleMenuClick}
+                  >
+                    <Link href="/users">
+                      <User className="h-4 w-4 text-slate-500" />
+                      <span>Daftar Pengguna</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

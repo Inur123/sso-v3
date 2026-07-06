@@ -38,7 +38,7 @@ export default async function DashboardLayout({
       const sessionData = await response.json();
       if (sessionData?.user) {
         sessionUser = sessionData.user;
-        isAdmin = sessionData.user.email === "admin@gmail.com";
+        isAdmin = sessionData.user.role === "admin" || sessionData.user.email === "admin@gmail.com";
       }
     }
   } catch (err) {

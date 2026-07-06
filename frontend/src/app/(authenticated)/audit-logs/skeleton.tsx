@@ -13,6 +13,13 @@ export function AuditLogsSkeleton() {
         <div className="h-3.5 w-96 bg-slate-200/70 rounded" />
       </div>
 
+      {/* Filter Bar skeleton */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
+        <div className="flex-1 h-[38px] bg-slate-200/80 rounded-lg" />
+        <div className="flex-1 h-[38px] bg-slate-200/80 rounded-lg" />
+        <div className="h-[38px] w-[38px] shrink-0 bg-slate-200/70 rounded-lg" />
+      </div>
+
       {/* Tabel Card Skeleton */}
       <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
         <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -39,6 +38,7 @@ export default function ForgotPasswordPage() {
           "Tautan atur ulang kata sandi berhasil dikirim! Silakan periksa inbox email Anda.",
         );
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       const errMsg = "Terjadi kesalahan jaringan";
       setError(errMsg);

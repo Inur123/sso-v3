@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
   Globe,
+  ShieldAlert,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -318,30 +319,31 @@ export default function ClientDetailPage({
                 </DialogTrigger>
                 <DialogContent
                   showCloseButton={false}
-                  className="bg-white border border-slate-200"
+                  className="bg-white border border-slate-200 max-w-[400px] rounded-xl p-6 shadow-xl"
                 >
-                  <DialogHeader>
-                    <DialogTitle className="text-slate-900 font-bold">
-                      Apakah Anda benar-benar yakin?
+                  <DialogHeader className="flex flex-col items-center text-center sm:items-center sm:text-center">
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600 border border-red-100">
+                      <ShieldAlert className="h-5 w-5" />
+                    </div>
+                    <DialogTitle className="text-sm font-bold text-slate-900">
+                      Hapus Aplikasi Secara Permanen?
                     </DialogTitle>
-                    <DialogDescription className="text-slate-500">
-                      Tindakan ini tidak dapat dibatalkan. Aplikasi &quot;
-                      {client.name}&quot; beserta seluruh kredensialnya akan
-                      dihapus secara permanen dari sistem portal SSO.
+                    <DialogDescription className="text-xs text-slate-500 leading-relaxed mt-2">
+                      Tindakan ini bersifat destruktif dan tidak dapat dibatalkan. Aplikasi <strong className="text-slate-700">&quot;{client.name}&quot;</strong> beserta seluruh kredensialnya akan dihapus secara permanen dari sistem portal SSO.
                     </DialogDescription>
                   </DialogHeader>
-                  <DialogFooter>
+                  <DialogFooter className="grid grid-cols-2 gap-2 mt-5">
                     <DialogClose asChild>
                       <Button
                         variant="outline"
-                        className="border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer text-xs"
+                        className="w-full text-xs font-semibold h-9 rounded-md border border-slate-200 hover:bg-slate-50 cursor-pointer"
                       >
                         Batal
                       </Button>
                     </DialogClose>
                     <Button
                       variant="destructive"
-                      className="bg-red-600 hover:bg-red-700 text-white cursor-pointer text-xs"
+                      className="w-full text-xs font-semibold h-9 rounded-md cursor-pointer"
                       onClick={handleDeleteClient}
                     >
                       Hapus Permanen
