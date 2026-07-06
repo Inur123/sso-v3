@@ -74,8 +74,8 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
 
   return (
     <Sidebar className="border-r border-slate-200 bg-white">
-      {/* Sidebar Header: Brand Logo (Selalu Tampil Statis) */}
-      <SidebarHeader className="border-b border-slate-100 p-4">
+      {/* Sidebar Header: Brand Logo (Tinggi h-16 sejajar dengan top navbar) */}
+      <SidebarHeader className="border-b border-slate-200 px-4 h-16 flex flex-row items-center justify-start shrink-0">
         <div className="flex items-center space-x-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
