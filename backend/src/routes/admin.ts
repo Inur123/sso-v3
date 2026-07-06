@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../db.js";
-import { oauthClient, user } from "../schema.js";
-import { eq } from "drizzle-orm";
+import { oauthClient, user, auditLog } from "../schema.js";
+import { eq, desc } from "drizzle-orm";
 import * as crypto from "crypto";
 
 // Definisi skema body untuk pembuatan Client Aplikasi
@@ -47,6 +47,21 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
     await db.insert(oauthClient).values(newClient);
 
+    // Catat ke Audit Log
+    try {
+      await db.insert(auditLog).values({
+        id: crypto.randomUUID(),
+        userId: null, // Null karena Admin Console menggunakan static token saat ini
+        action: "client.created",
+        clientIp: request.ip || "127.0.0.1",
+        userAgent: request.headers["user-agent"] || "unknown",
+        createdAt: new Date(),
+        metadata: `Membuat client aplikasi: ${name} (Client ID: ${clientId})`,
+      });
+    } catch (logErr) {
+      fastify.log.error(logErr, "Gagal menulis audit log client.created");
+    }
+
     return reply.status(210).send({
       message: "Aplikasi Client berhasil didaftarkan",
       client: {
@@ -68,7 +83,29 @@ export async function adminRoutes(fastify: FastifyInstance) {
   // 3. Menghapus Aplikasi Client
   fastify.delete("/clients/:id", async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     const { id } = request.params;
+    
+    // Cari detail client terlebih dahulu sebelum dihapus untuk pencatatan log
+    const client = await db.select().from(oauthClient).where(eq(oauthClient.id, id)).limit(1);
+    const clientName = client.length > 0 ? client[0].name : "unknown";
+    const clientId = client.length > 0 ? client[0].clientId : "unknown";
+
     await db.delete(oauthClient).where(eq(oauthClient.id, id));
+
+    // Catat ke Audit Log
+    try {
+      await db.insert(auditLog).values({
+        id: crypto.randomUUID(),
+        userId: null,
+        action: "client.deleted",
+        clientIp: request.ip || "127.0.0.1",
+        userAgent: request.headers["user-agent"] || "unknown",
+        createdAt: new Date(),
+        metadata: `Menghapus client aplikasi: ${clientName} (Client ID: ${clientId})`,
+      });
+    } catch (logErr) {
+      fastify.log.error(logErr, "Gagal menulis audit log client.deleted");
+    }
+
     return reply.send({ message: "Aplikasi Client berhasil dihapus" });
   });
 
@@ -86,5 +123,51 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get("/users/count", async (request: FastifyRequest, reply: FastifyReply) => {
     const allUsers = await db.select().from(user);
     return reply.send({ count: allUsers.length });
+  });
+
+  // 6. Mendapatkan Log Audit Sistem Terkini
+  fastify.get("/audit-logs", async (request: FastifyRequest, reply: FastifyReply) => {
+    const logs = await db
+      .select({
+        id: auditLog.id,
+        action: auditLog.action,
+        clientIp: auditLog.clientIp,
+        userAgent: auditLog.userAgent,
+        createdAt: auditLog.createdAt,
+        metadata: auditLog.metadata,
+        userEmail: user.email,
+        userName: user.name,
+      })
+      .from(auditLog)
+      .leftJoin(user, eq(auditLog.userId, user.id))
+      .orderBy(desc(auditLog.createdAt))
+      .limit(100);
+
+    return reply.send(logs);
+  });
+
+  // 7. Mendapatkan Detail Satu Log Audit
+  fastify.get("/audit-logs/:id", async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    const { id } = request.params;
+    const log = await db
+      .select({
+        id: auditLog.id,
+        action: auditLog.action,
+        clientIp: auditLog.clientIp,
+        userAgent: auditLog.userAgent,
+        createdAt: auditLog.createdAt,
+        metadata: auditLog.metadata,
+        userEmail: user.email,
+        userName: user.name,
+      })
+      .from(auditLog)
+      .leftJoin(user, eq(auditLog.userId, user.id))
+      .where(eq(auditLog.id, id))
+      .limit(1);
+
+    if (log.length === 0) {
+      return reply.status(404).send({ error: "Log audit tidak ditemukan" });
+    }
+    return reply.send(log[0]);
   });
 }

@@ -22,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutGrid, User, History, LogOut, ChevronUp, Globe } from "lucide-react";
+import { LayoutGrid, User, History, LogOut, ChevronUp, Globe, ClipboardList } from "lucide-react";
 
 interface AppSidebarProps {
   serverIsAdmin?: boolean;
@@ -125,6 +125,18 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
                     <Link href="/clients">
                       <Globe className="h-4 w-4 text-slate-500" />
                       <span>Aplikasi Terdaftar</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === "/audit-logs" || pathname.includes("/audit-logs/")}
+                    onClick={handleMenuClick}
+                  >
+                    <Link href="/audit-logs">
+                      <ClipboardList className="h-4 w-4 text-slate-500" />
+                      <span>Log Audit</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

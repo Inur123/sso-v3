@@ -65,7 +65,7 @@ export default function Home() {
 
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.15] sm:leading-[1.1] max-w-4xl mb-6">
           Satu Kredensial, <br />
-          <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
             Akses Seluruh Layanan Tanpa Batas
           </span>
         </h1>

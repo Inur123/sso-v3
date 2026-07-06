@@ -21,11 +21,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ShieldAlert, Plus, Eye } from "lucide-react";
+import { ShieldAlert, Plus, Eye, Globe } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import Link from "next/link";
-import { DashboardSkeleton } from "../dashboard/skeleton";
+import { ClientsSkeleton } from "./skeleton";
 
 interface ClientApp {
   id: string;
@@ -137,7 +137,7 @@ export default function ClientsPage() {
   };
 
   if (isPending || loading) {
-    return <DashboardSkeleton />;
+    return <ClientsSkeleton />;
   }
 
   if (!session || !isAdmin) {
@@ -147,14 +147,15 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Aplikasi Terdaftar
-            </h1>
-            <p className="text-xs text-slate-500 font-medium">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
+              <Globe className="h-5.5 w-5.5 text-indigo-600" />
+              <span>Aplikasi Terdaftar</span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
               Kelola dan daftarkan aplikasi luar yang diizinkan menggunakan
               login SSO Anda.
             </p>
@@ -163,11 +164,11 @@ export default function ClientsPage() {
           {/* Dialog Shadcn UI: Tambah Aplikasi Baru */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer flex items-center shadow-sm">
+              <Button className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer flex items-center shadow-sm self-start md:self-auto">
                 <Plus className="h-4 w-4 mr-1.5" /> Tambah Aplikasi
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white border border-slate-200 shadow-xl max-w-md p-6 rounded-xl">
+            <DialogContent className="bg-white border border-slate-200 shadow-xl w-[92vw] sm:max-w-md p-6 rounded-xl">
               <DialogHeader className="space-y-1.5">
                 <DialogTitle className="text-base font-bold text-slate-900">
                   Daftarkan Aplikasi Baru
@@ -301,7 +302,7 @@ export default function ClientsPage() {
 
                 {/* Panel Kontrol Pagination Bawaan Shadcn UI */}
                 {clients.length > 0 && (
-                  <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/30">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-slate-100 bg-slate-50/30">
                     <div className="text-xs text-slate-500">
                       Menampilkan{" "}
                       <span className="font-bold text-slate-700">

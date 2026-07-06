@@ -1,6 +1,6 @@
-# Rencana Implementasi Sistem SSO (Single Sign-On) - Dokumentasi Lengkap
+# Rencana & Riwayat Implementasi Sistem SSO (Single Sign-On) - Dokumentasi Lengkap
 
-Dokumen ini berisi panduan dan referensi lengkap langkah demi langkah untuk membangun seluruh ekosistem SSO (Backend API & Frontend UI) di dalam folder `/Users/muhammadzainurroziqin/Documents/coding/sso-v3`.
+Dokumen ini berisi panduan, referensi langkah demi langkah, dan catatan pembaruan antarmuka sistem SSO (Backend API & Frontend UI) di dalam folder `/Users/muhammadzainurroziqin/Documents/coding/sso-v3`.
 
 ---
 
@@ -24,89 +24,92 @@ Membuat folder `backend` dan menginisialisasi proyek baru menggunakan Bun.
   bun init -y
   ```
 
-### Langkah 3: Instalasi Dependensi Backend
+### Langkah 3: Setup Inisialisasi Dependensi Backend
 Menginstal library web server, database ORM, dan modul keamanan enterprise:
 - **Perintah:**
   ```bash
-  bun add fastify @fastify/cors @fastify/helmet @fastify/rate-limit better-auth @better-auth/drizzle-adapter @better-auth/oauth-provider pg drizzle-orm dotenv
+  bun add fastify @fastify/cors @fastify/helmet @fastify/rate-limit better-auth @better-auth/drizzle-adapter @better-auth/oauth-provider pg drizzle-orm dotenv resend
   bun add -d typescript @types/node @types/pg drizzle-kit tsx
   ```
 
 ### Langkah 4: Pembuatan File Konfigurasi Backend
-1. **`.env`**: Menyimpan `DATABASE_URL` (port 5432) dan rahasia enkripsi Better Auth.
-2. **`tsconfig.json`**: Konfigurasi TypeScript compiler (menggunakan `NodeNext` ESM module resolution).
-3. **`drizzle.config.ts`**: Menghubungkan Drizzle Kit dengan database PostgreSQL.
+1. **`.env`**: Menyimpan `DATABASE_URL`, `RESEND_API_KEY`, dan rahasia Better Auth.
+2. **`tsconfig.json`**: Konfigurasi TypeScript compiler.
+3. **`drizzle.config.ts`**: Integrasi Drizzle Kit.
 
 ### Langkah 5: Penulisan Kode Program Backend
-1. **`src/db.ts`**: Penghubung database Postgres dengan Drizzle ORM menggunakan *Connection Pooling* standar produksi.
-2. **`src/auth.ts`**: Konfigurasi Better Auth terintegrasi dengan adapter Drizzle dan plugin `@better-auth/oauth-provider` (OAuth 2.1 / OIDC Server).
-3. **`src/routes/admin.ts`**: Rute API khusus admin (`/api/admin/clients`) untuk membuat, melihat, dan menghapus aplikasi client SSO.
-4. **`src/server.ts`**: Web server Fastify di port `5001` dengan proteksi Helmet, CORS, Rate Limiter, JSON logging, rute admin, rute Better Auth, dan Graceful Shutdown.
+1. **`src/db.ts`**: Koneksi database.
+2. **`src/auth.ts`**: Inisialisasi Better Auth dengan `sendResetPassword` handler terintegrasi Resend API untuk mengirim tautan `/reset-password?token=...`.
+3. **`src/routes/admin.ts`**: Manajemen client oleh admin.
+4. **`src/server.ts`**: Server Fastify dengan Graceful Shutdown.
 
 ### Langkah 6: Eksekusi Migrasi Database (Push Schema)
 Mengirimkan skema tabel Better Auth yang dibuat otomatis ke database PostgreSQL lokal.
-- **Perintah:**
-  ```bash
-  bunx @better-auth/cli generate --output ./src/schema.ts --yes
-  bun x drizzle-kit push
-  ```
 
 ### Langkah 7: Uji Coba Server Backend
 Menjalankan server Fastify secara lokal di port `5001`.
-- **Perintah:**
-  ```bash
-  bun run src/server.ts
-  ```
 
 ---
 
-## 🔵 BAGIAN 2: FRONTEND UI (Rencana Langkah Selanjutnya)
+## 🟢 BAGIAN 2: FRONTEND UI (Sudah Selesai Dikerjakan)
 
-Bagian ini akan dikembangkan di `/Users/muhammadzainurroziqin/Documents/coding/sso-v3/frontend` menggunakan Next.js (App Router) + TailwindCSS + Shadcn UI Original (Strictly Light Mode).
+Bagian ini dikembangkan di `/Users/muhammadzainurroziqin/Documents/coding/sso-v3/frontend` menggunakan Next.js (App Router) + TailwindCSS + Shadcn UI Original.
 
 ### Langkah 8: Setup Inisialisasi Proyek Frontend (`sso-v3/frontend`)
-Kita akan membuat proyek Next.js baru di dalam folder `frontend` menggunakan Bun.
-- **Perintah:**
-  ```bash
-  cd /Users/muhammadzainurroziqin/Documents/coding/sso-v3
-  bun create next-app frontend --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-bun
-  ```
+Membuat proyek Next.js baru di dalam folder `frontend` menggunakan Bun.
 
 ### Langkah 9: Setup Shadcn UI (Original & Light Mode)
 Menginisialisasi Shadcn UI bawaan asli menggunakan CLI resmi dengan pengaturan default (Light Mode saja).
-- **Perintah (di dalam folder frontend):**
-  ```bash
-  cd frontend
-  bunx shadcn@latest init -d
-  ```
-- **Catatan:** File `globals.css` yang dihasilkan murni dari Shadcn UI. Kita hanya akan mendesain UI dengan skema warna Light Mode bawaan (latar belakang putih, card abu-abu terang/putih, text hitam/gelap).
 
 ### Langkah 10: Instalasi Dependensi Frontend
-Menginstal library client SDK Better Auth dan pendukungnya:
-- **Perintah:**
-  ```bash
-  bun add better-auth lucide-react clsx tailwind-merge
-  ```
+Menginstal library client SDK Better Auth, Lucide Icons, dan utilitas styling.
 
 ### Langkah 11: Konfigurasi File Lingkungan Frontend (`frontend/.env.local`)
 Menghubungkan Frontend ke port Backend Fastify yang berjalan di port `5001`.
-```env
-NEXT_PUBLIC_API_URL="http://localhost:5001"
-```
 
 ### Langkah 12: Inisialisasi Better Auth Client SDK (`src/lib/auth-client.ts`)
-Membuat instansi Client SDK untuk memanggil fungsi-fungsi autentikasi Better Auth di React:
-```typescript
-import { createAuthClient } from "better-auth/client";
+Membuat instansi Client SDK untuk memanggil fungsi-fungsi autentikasi Better Auth di React.
 
-export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_API_URL
-});
-```
+### Langkah 13: Pembuatan Halaman UI Utama (Strictly Light Mode)
+1. **Halaman Login (`/login`):** Form login minimalis dengan tautan Lupa Password menuju `/forgot-password`.
+2. **Halaman Register (`/register`):** Form daftar akun baru dengan gaya terang.
+3. **Halaman Persetujuan OIDC (`/consent`):** Tampilan konfirmasi otorisasi OAuth 2.1.
+4. **Halaman Dashboard (`/dashboard`):** Menampilkan ringkasan data sesi portal aktif.
 
-### Langkah 13: Penulisan Halaman UI (Tampilan Premium - Strictly Light Mode)
-Kita akan membuat halaman-halaman utama:
-1. **Halaman Login (`/login`):** Form login minimalis berwarna putih terang bersih menggunakan komponen Input, Button, dan Card dari Shadcn UI.
-2. **Halaman Register (`/register`):** Form daftar akun baru dengan gaya terang yang selaras.
-3. **Halaman Persetujuan OIDC (`/consent`):** Tampilan konfirmasi otorisasi aplikasi luar (light mode).
-4. **Halaman Dashboard Admin (`/admin/dashboard`):** Tabel daftar aplikasi client terdaftar (memanggil API `/api/admin/clients`) dan dialog popup untuk mendaftarkan aplikasi client baru secara instan.
+---
+
+## 🟢 BAGIAN 3: PENYEMPURNAAN ANTARMUKA & KUALITAS SISTEM SSO (Sudah Selesai Dikerjakan)
+
+Bagian ini merekam fitur-fitur baru dan optimalisasi stabilitas UI/UX yang telah diintegrasikan ke dalam proyek.
+
+### Langkah 14: Pembuatan Fitur Log Audit Sistem (Admin Console)
+*   **Backend:** Menambahkan rute `GET /api/admin/audit-logs` dan `GET /api/admin/audit-logs/:id`.
+*   **Tabel Ringkas:** Log audit utama dipangkas menjadi kolom No, Waktu, Aksi, dan Pelaku dengan ikon detail link (ikon mata).
+*   **Halaman Detail:** Membuat rute dinamis `/audit-logs/[id]` dan skeleton shimmer detailnya.
+
+### Langkah 15: Optimalisasi Halaman Aplikasi Terdaftar (`/clients`)
+*   **Responsivitas Mobile:** Menyelaraskan margin modal dialog, tombol, dan tumpukan pagination pada layar ponsel pintar.
+*   **Sumbu Presisi (Skeleton Loader):** Membuat berkas skeleton mandiri untuk halaman utama dan detail klien, serta meniadakan *nested padding*.
+*   **Dialog Klik Luar:** Mengubah penanganan modal hapus menjadi `Dialog` agar menutup secara otomatis saat pengguna mengeklik area luar kartu dialog.
+
+### Langkah 16: Peningkatan Keamanan & Kejelasan Form Masuk/Daftar
+*   **Mata Sandi (Show/Hide):** Menambahkan tombol mata (`Eye` & `EyeOff`) pada kolom password di `/login` dan `/register` dengan padding aman `pr-10` untuk mencegah tertutupnya teks.
+
+### Langkah 17: Redesign Halaman Riwayat Sesi SSO (`/sessions`)
+*   **Visual Sejajar:** Memindahkan judul di luar kartu, menambahkan kolom penomoran "No", label kapital tebal, badge terhubung, dan skeleton shimmer langsung pada baris tabel (`TableBody`) saat memuat data.
+*   **Stabilitas Tanpa Flicker:** Membatasi dependensi pemuatan data log sesi pada token primitif (`session?.session?.token`) guna melenyapkan kedipan render loop tak terbatas.
+*   **Dialog Kustom:** Mengganti window `confirm()` bawaan browser dengan dialog kustom Shadcn yang mendukung penutupan klik di luar (*click outside*).
+
+---
+
+## 🟢 BAGIAN 4: INTEGRASI FITUR LUPA PASSWORD (Sudah Selesai Dikerjakan)
+
+### Langkah 18: Pengiriman Email Atur Ulang Sandi (Backend)
+*   Menghubungkan handler `sendResetPassword` di dalam konfigurasi Better Auth backend dengan API Resend untuk mengirim surel instruksi reset ke user.
+
+### Langkah 19: Halaman Permintaan Reset (`/forgot-password`)
+*   Membuat form penginputan email user dengan validasi loading state, penanganan kesalahan, notifikasi toast sukses, serta integrasi pemanggilan `authClient.requestPasswordReset`.
+
+### Langkah 20: Halaman Formulir Sandi Baru (`/reset-password`)
+*   Membuat form atur ulang kata sandi yang membaca query parameter token dari surel (`?token=...`).
+*   Dilengkapi tombol toggle mata kata sandi ganda (Sandi Baru & Konfirmasi Sandi Baru), validasi kecocokan sandi, dan redirect otomatis kembali ke halaman `/login` dengan notifikasi sukses.

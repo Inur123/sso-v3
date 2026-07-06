@@ -17,6 +17,22 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true, // Login dengan email dan password aktif
     requireEmailVerification: true, // Wajib verifikasi email sebelum bisa login
+    sendResetPassword: async ({ user, url }: { user: any; url: string }) => {
+      try {
+        console.log(`[Resend] Mengirim reset kata sandi ke: ${user.email}`);
+        const result = await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || "SSO Portal <no-reply@zainur.biz.id>",
+          to: user.email,
+          subject: "Atur Ulang Kata Sandi - SSO Portal",
+          html: `<p>Halo ${user.name},</p>
+                 <p>Anda meminta untuk mengatur ulang kata sandi Anda. Silakan klik tautan di bawah ini untuk mereset kata sandi Anda:</p>
+                 <p><a href="${url}">${url}</a></p>`,
+        });
+        console.log("[Resend] Sukses mengirim email reset kata sandi:", result);
+      } catch (err) {
+        console.error("[Resend] Gagal mengirim email reset kata sandi:", err);
+      }
+    },
   },
   user: {
     changeEmail: {
@@ -67,4 +83,56 @@ export const auth = betterAuth({
     }),
     bearer(), // Mengaktifkan verifikasi header "Authorization: Bearer <token>" secara native
   ],
+  events: {
+    user: {
+      created: async (data: { user: { id: any; email: any; }; }) => {
+        try {
+          // Bun secara native menyediakan crypto.randomUUID() secara global
+          await db.insert(schema.auditLog).values({
+            id: globalThis.crypto.randomUUID(),
+            userId: data.user.id,
+            action: "user.signup",
+            clientIp: "unknown",
+            userAgent: "unknown",
+            createdAt: new Date(),
+            metadata: `Pendaftaran pengguna baru dengan email: ${data.user.email}`,
+          });
+        } catch (e) {
+          console.error("Gagal mencatat audit log user.signup:", e);
+        }
+      },
+    },
+    session: {
+      created: async (data: { session: { userId: any; ipAddress: any; userAgent: any; }; }) => {
+        try {
+          await db.insert(schema.auditLog).values({
+            id: globalThis.crypto.randomUUID(),
+            userId: data.session.userId,
+            action: "user.login",
+            clientIp: data.session.ipAddress || "unknown",
+            userAgent: data.session.userAgent || "unknown",
+            createdAt: new Date(),
+            metadata: "Pengguna berhasil melakukan login",
+          });
+        } catch (e) {
+          console.error("Gagal mencatat audit log user.login:", e);
+        }
+      },
+      deleted: async (data: { session: { userId: any; ipAddress: any; userAgent: any; }; }) => {
+        try {
+          await db.insert(schema.auditLog).values({
+            id: globalThis.crypto.randomUUID(),
+            userId: data.session.userId,
+            action: "user.logout",
+            clientIp: data.session.ipAddress || "unknown",
+            userAgent: data.session.userAgent || "unknown",
+            createdAt: new Date(),
+            metadata: "Pengguna berhasil melakukan logout",
+          });
+        } catch (e) {
+          console.error("Gagal mencatat audit log user.logout:", e);
+        }
+      },
+    },
+  },
 });

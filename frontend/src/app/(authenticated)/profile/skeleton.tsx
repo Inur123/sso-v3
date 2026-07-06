@@ -4,11 +4,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function ProfileSkeleton() {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6 animate-pulse">
+    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 bg-slate-50/40 min-h-screen animate-pulse">
+      
+      {/* Breadcrumbs Placeholder */}
+      <div className="flex items-center space-x-2 text-xs text-slate-200">
+        <div className="h-3 w-10 bg-slate-200 rounded" />
+        <span>/</span>
+        <div className="h-3 w-20 bg-slate-200 rounded" />
+      </div>
+
       {/* Grid Layout Dashboard */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Card Profil Utama Skeleton */}
-        <Card className="border border-slate-200 bg-white shadow-sm md:col-span-2 overflow-hidden">
+        <Card className="border border-slate-200 bg-white shadow-sm md:col-span-2 overflow-hidden rounded-xl">
           <CardHeader className="flex flex-row items-center space-x-3 border-b border-slate-100 bg-slate-50/50 py-4">
             <div className="h-5 w-5 bg-slate-200 rounded-full" />
             <div className="h-4 w-24 bg-slate-200 rounded" />
@@ -32,7 +40,7 @@ export function ProfileSkeleton() {
         </Card>
 
         {/* Card Sesi Aktif Skeleton */}
-        <Card className="border border-slate-200 bg-white shadow-sm col-span-1 overflow-hidden">
+        <Card className="border border-slate-200 bg-white shadow-sm col-span-1 overflow-hidden rounded-xl">
           <CardHeader className="flex flex-row items-center space-x-3 border-b border-slate-100 bg-slate-50/50 py-4">
             <div className="h-5 w-5 bg-slate-200 rounded-full" />
             <div className="h-4 w-28 bg-slate-200 rounded" />

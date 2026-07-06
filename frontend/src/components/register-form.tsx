@@ -15,7 +15,7 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 export function RegisterForm({
   className,
@@ -24,6 +24,7 @@ export function RegisterForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -105,13 +106,29 @@ export function RegisterForm({
 
         <Field>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pr-10"
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-0 h-full w-10 text-slate-400 hover:text-slate-600 hover:bg-transparent cursor-pointer flex items-center justify-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </Field>
 
         <Field>

@@ -19,7 +19,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 export function LoginForm({
   className,
@@ -27,15 +27,17 @@ export function LoginForm({
 }: React.ComponentProps<"form">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Efek untuk memantau notifikasi register sukses dan logout sukses dari URL params / sessionStorage
+  // Efek untuk memantau notifikasi register sukses, logout sukses, dan reset password dari URL params / sessionStorage
   useEffect(() => {
     const registered = searchParams.get("registered");
     const verified = searchParams.get("verified");
+    const passwordReset = searchParams.get("password_reset");
 
     if (registered === "true") {
       toast.info("Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk melakukan verifikasi akun sebelum masuk.");
@@ -44,6 +46,11 @@ export function LoginForm({
 
     if (verified === "true") {
       toast.success("Email Anda berhasil terverifikasi! Silakan masuk dengan akun Anda.");
+      window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
+    }
+
+    if (passwordReset === "true") {
+      toast.success("Kata sandi Anda berhasil diatur ulang! Silakan masuk menggunakan kata sandi baru Anda.");
       window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
     }
 
@@ -67,7 +74,12 @@ export function LoginForm({
       });
 
       if (loginError) {
-        const errMsg = loginError.message || "Email atau password salah";
+        let errMsg = loginError.message || "Gagal masuk ke akun";
+        if (errMsg === "Invalid email or password") {
+          errMsg = "Email atau password tidak sesuai";
+        } else if (errMsg === "Email not verified") {
+          errMsg = "Email belum diverifikasi. Silakan periksa kotak masuk email Anda.";
+        }
         setError(errMsg);
         toast.error(errMsg); // Tampilkan error di sonner toast
       } else {
@@ -125,20 +137,36 @@ export function LoginForm({
         <Field>
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <a
-              href="#"
+            <Link
+              href="/forgot-password"
               className="ml-auto text-sm underline-offset-4 hover:underline"
             >
               Lupa password?
-            </a>
+            </Link>
           </div>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pr-10"
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-0 h-full w-10 text-slate-400 hover:text-slate-600 hover:bg-transparent cursor-pointer flex items-center justify-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </Field>
 
         <Field>

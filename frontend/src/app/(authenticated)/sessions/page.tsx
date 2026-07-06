@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -18,9 +12,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { History, Loader2, Eye, EyeOff } from "lucide-react";
+import { History, Eye, EyeOff } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { SessionsSkeleton } from "./skeleton";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface SSOLog {
   id: string;
@@ -38,6 +43,11 @@ export default function SessionsPage() {
     Record<string, boolean>
   >({});
 
+  // State untuk dialog konfirmasi cabut akses kustom
+  const [isRevoking, setIsRevoking] = useState(false);
+  const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
+  const [selectedLogName, setSelectedLogName] = useState("");
+
   const router = useRouter();
 
   // Membaca session aktif dari Better Auth Client
@@ -48,13 +58,14 @@ export default function SessionsPage() {
 
   // Fungsi memuat riwayat log masuk aplikasi SSO riil dari database Fastify API
   const fetchSSOLogs = useCallback(async () => {
-    if (!session?.session?.token) return;
-    setLoadingLogs(true);
+    const token = session?.session?.token;
+    if (!token) return;
+
     try {
       const response = await fetch(`${API_URL}/api/user/sso-logs`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.session.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
@@ -68,47 +79,51 @@ export default function SessionsPage() {
     } finally {
       setLoadingLogs(false);
     }
-  }, [API_URL, session]);
+  }, [API_URL, session?.session?.token]);
 
   useEffect(() => {
-    if (!isPending && !session) {
-      router.push("/login");
-    } else if (!isPending && session) {
-      if (isAdmin) {
+    if (!isPending) {
+      if (!session) {
+        router.push("/login");
+      } else if (isAdmin) {
         router.push("/dashboard");
       } else {
-        const timer = setTimeout(() => {
-          fetchSSOLogs();
-        }, 0);
-        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchSSOLogs();
       }
     }
-  }, [session, isPending, isAdmin, fetchSSOLogs, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPending, session?.session?.token, isAdmin, router, fetchSSOLogs]);
 
   // Fungsi mencabut sesi aplikasi (revoke) di backend secara nyata
   const handleRevokeClient = async (id: string) => {
-    if (
-      !confirm("Apakah Anda yakin ingin memutuskan (cabut akses) aplikasi ini?")
-    )
-      return;
-    if (!session?.session?.token) return;
+    const token = session?.session?.token;
+    if (!token) return;
 
     try {
       const response = await fetch(`${API_URL}/api/user/sso-logs/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${session.session.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
+        toast.success(`Akses sesi untuk aplikasi berhasil dicabut.`);
         // Refresh daftar log SSO
         fetchSSOLogs();
       } else {
-        alert("Gagal mencabut akses aplikasi.");
+        toast.error("Gagal mencabut akses sesi aplikasi.");
       }
     } catch (err) {
       console.error("Gagal memanggil API revoke:", err);
+      toast.error("Terjadi kesalahan jaringan.");
     }
+  };
+
+  const confirmRevoke = (id: string, name: string) => {
+    setSelectedLogId(id);
+    setSelectedLogName(name);
+    setIsRevoking(true);
   };
 
   // Fungsi toggle visibilitas sensor token (eye icon)
@@ -126,27 +141,36 @@ export default function SessionsPage() {
   if (!session || isAdmin) return null;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
-      <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <CardHeader className="flex flex-row items-center space-x-3 border-b border-slate-100 bg-slate-50/50 py-4">
-          <History className="h-5 w-5 text-indigo-600" />
-          <div>
-            <CardTitle className="text-sm font-semibold">
-              Aplikasi Terhubung & Sesi SSO Aktif
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              Daftar aplikasi klien SSO yang sedang aktif diakses menggunakan
-              akun Anda. Anda dapat mencabut otorisasi kapan saja.
-            </CardDescription>
-          </div>
-        </CardHeader>
+    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
+      {/* Breadcrumbs */}
+      <div className="flex items-center space-x-2 text-xs text-slate-500">
+        <span
+          className="hover:text-slate-900 cursor-pointer"
+          onClick={() => router.push("/dashboard")}
+        >
+          Portal
+        </span>
+        <span>/</span>
+        <span className="text-slate-900 font-medium">Riwayat Sesi SSO</span>
+      </div>
+
+      {/* Page Header (Luar Card) */}
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
+            <History className="h-5.5 w-5.5 text-indigo-600" />
+            <span>Riwayat Sesi SSO</span>
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Daftar aplikasi klien SSO yang sedang aktif diakses menggunakan akun
+            Anda. Anda dapat mencabut otorisasi kapan saja.
+          </p>
+        </div>
+      </div>
+
+      <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
         <CardContent className="p-0">
-          {loadingLogs ? (
-            <div className="py-12 text-center text-slate-500 text-sm flex flex-col items-center justify-center space-y-2">
-              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-              <p>Memuat data sesi dari database...</p>
-            </div>
-          ) : ssoLogs.length === 0 ? (
+          {!loadingLogs && ssoLogs.length === 0 ? (
             <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center space-y-2">
               <History className="h-8 w-8 text-slate-300" />
               <p className="font-semibold text-slate-600 mt-2">
@@ -162,87 +186,163 @@ export default function SessionsPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-slate-200 bg-slate-50/50">
-                    <TableHead className="font-semibold text-slate-700 text-xs">
+                    <TableHead className="font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4 w-12 text-center">
+                      No
+                    </TableHead>
+                    <TableHead className="font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4">
                       Nama Aplikasi
                     </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-xs">
+                    <TableHead className="font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4">
                       Key / Token Otorisasi
                     </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-xs">
+                    <TableHead className="font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4">
                       Waktu Login SSO
                     </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-xs">
+                    <TableHead className="font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4">
                       Status Sesi
                     </TableHead>
-                    <TableHead className="text-right font-semibold text-slate-700 text-xs">
+                    <TableHead className="text-right font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4 pr-6">
                       Aksi
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ssoLogs.map((log) => {
-                    const isTokenVisible = !!visibleTokenIds[log.id];
-                    const displayToken = isTokenVisible
-                      ? log.token
-                      : `${log.token.substring(0, 8)}...${log.token.substring(log.token.length - 8)}`;
-                    return (
-                      <TableRow
-                        key={log.id}
-                        className="border-b border-slate-100 hover:bg-slate-50/50"
-                      >
-                        <TableCell className="font-semibold text-slate-900">
-                          {log.clientName}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs text-slate-600">
-                          <div className="flex items-center space-x-2">
-                            <code className="bg-slate-50 px-2 py-1 rounded border border-slate-200/60">
-                              {displayToken}
-                            </code>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 text-slate-400 hover:text-slate-700 cursor-pointer"
-                              onClick={() => toggleTokenVisibility(log.id)}
-                              title={
-                                isTokenVisible
-                                  ? "Sembunyikan Key"
-                                  : "Tampilkan Key"
-                              }
-                            >
-                              {isTokenVisible ? (
-                                <EyeOff className="h-3.5 w-3.5" />
-                              ) : (
-                                <Eye className="h-3.5 w-3.5" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-slate-600">
-                          {new Date(log.createdAt).toLocaleString("id-ID")}
-                        </TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700 ring-1 ring-inset ring-green-600/20 animate-pulse">
-                            Terhubung
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            className="text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer py-1 h-7"
-                            onClick={() => handleRevokeClient(log.id)}
+                  {loadingLogs
+                    ? // Baris loading skeleton (shimmer)
+                      Array.from({ length: 3 }).map((_, idx) => (
+                        <TableRow
+                          key={idx}
+                          className="border-b border-slate-100 animate-pulse"
+                        >
+                          <TableCell className="text-center py-4">
+                            <div className="h-3.5 w-4 bg-slate-200 rounded mx-auto" />
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="h-3.5 w-32 bg-slate-200 rounded" />
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="h-7 w-48 bg-slate-200/60 rounded-md" />
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="h-3.5 w-36 bg-slate-200 rounded" />
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="h-6 w-20 bg-slate-200/50 rounded-full" />
+                          </TableCell>
+                          <TableCell className="text-right py-4 pr-6">
+                            <div className="h-8 w-24 bg-slate-200/40 rounded-md ml-auto" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : ssoLogs.map((log, idx) => {
+                        const isTokenVisible = !!visibleTokenIds[log.id];
+                        const displayToken = isTokenVisible
+                          ? log.token
+                          : `${log.token.substring(0, 8)}...${log.token.substring(log.token.length - 8)}`;
+                        return (
+                          <TableRow
+                            key={log.id}
+                            className="border-b border-slate-100 hover:bg-slate-50/50"
                           >
-                            Cabut Akses
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                            <TableCell className="text-center font-medium text-slate-500 text-xs">
+                              {idx + 1}
+                            </TableCell>
+                            <TableCell className="font-semibold text-slate-900 text-xs">
+                              {log.clientName}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-slate-600">
+                              <div className="flex items-center space-x-2">
+                                <code className="bg-slate-50 px-2.5 py-1.5 rounded border border-slate-200/60 font-mono text-[11px]">
+                                  {displayToken}
+                                </code>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-slate-400 hover:text-slate-700 cursor-pointer"
+                                  onClick={() => toggleTokenVisibility(log.id)}
+                                  title={
+                                    isTokenVisible
+                                      ? "Sembunyikan Key"
+                                      : "Tampilkan Key"
+                                  }
+                                >
+                                  {isTokenVisible ? (
+                                    <EyeOff className="h-3.5 w-3.5" />
+                                  ) : (
+                                    <Eye className="h-3.5 w-3.5" />
+                                  )}
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-slate-600 text-xs">
+                              {new Date(log.createdAt).toLocaleString("id-ID")}
+                            </TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                Terhubung
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right pr-6">
+                              <Button
+                                variant="ghost"
+                                className="text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer py-1 h-8 px-3 rounded-md"
+                                onClick={() =>
+                                  confirmRevoke(log.id, log.clientName)
+                                }
+                              >
+                                Cabut Akses
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                 </TableBody>
               </Table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog Konfirmasi Cabut Akses Kustom */}
+      <Dialog open={isRevoking} onOpenChange={setIsRevoking}>
+        <DialogContent
+          showCloseButton={false}
+          className="bg-white border border-slate-200"
+        >
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 font-bold">
+              Apakah Anda yakin?
+            </DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Apakah Anda yakin ingin memutuskan sesi dan mencabut akses untuk
+              aplikasi &quot;{selectedLogName}&quot;? Anda harus masuk kembali
+              ke aplikasi tersebut untuk menggunakan layanan SSO.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                className="border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer text-xs"
+              >
+                Batal
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700 text-white cursor-pointer text-xs font-semibold"
+              onClick={() => {
+                if (selectedLogId) {
+                  handleRevokeClient(selectedLogId);
+                  setIsRevoking(false);
+                }
+              }}
+            >
+              Cabut Akses
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

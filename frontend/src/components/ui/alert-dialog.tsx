@@ -39,6 +39,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       data-slot="alert-dialog-content"
+      data-size={size}
       className={cn(
         "group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
         size === "sm" && "max-w-xs",
@@ -157,7 +158,7 @@ const AlertDialogCancel = React.forwardRef<
     variant?: React.ComponentProps<typeof Button>["variant"]
     size?: React.ComponentProps<typeof Button>["size"]
   }
->(({ className, variant = "outline", size = "default", ...props }, ref) => (
+>(({ className, variant = "outline", size = "default", children, ...props }, ref) => (
   <AlertDialogPrimitive.Cancel
     ref={ref}
     asChild
@@ -165,7 +166,9 @@ const AlertDialogCancel = React.forwardRef<
     className={cn(className)}
     {...props}
   >
-    <Button variant={variant} size={size} />
+    <Button variant={variant} size={size}>
+      {children}
+    </Button>
   </AlertDialogPrimitive.Cancel>
 ))
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName

@@ -207,7 +207,9 @@ export const userRelations = relations(user, ({ many }) => ({
   oauthRefreshTokens: many(oauthRefreshToken),
   oauthAccessTokens: many(oauthAccessToken),
   oauthConsents: many(oauthConsent),
+  auditLogs: many(auditLog),
 }));
+
 
 export const sessionRelations = relations(session, ({ one, many }) => ({
   user: one(user, {
@@ -283,6 +285,23 @@ export const oauthConsentRelations = relations(oauthConsent, ({ one }) => ({
   }),
   user: one(user, {
     fields: [oauthConsent.userId],
+    references: [user.id],
+  }),
+}));
+
+export const auditLog = pgTable("audit_log", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+  action: text("action").notNull(),
+  clientIp: text("client_ip"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  metadata: text("metadata"),
+});
+
+export const auditLogRelations = relations(auditLog, ({ one }) => ({
+  user: one(user, {
+    fields: [auditLog.userId],
     references: [user.id],
   }),
 }));

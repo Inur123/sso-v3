@@ -184,10 +184,20 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
+      
+      {/* Breadcrumbs */}
+      <div className="flex items-center space-x-2 text-xs text-slate-500">
+        <span className="hover:text-slate-900 cursor-pointer" onClick={() => router.push("/dashboard")}>
+          Portal
+        </span>
+        <span>/</span>
+        <span className="text-slate-900 font-medium">Profil Saya</span>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Kartu Detail Profil */}
-        <Card className="border border-slate-200 bg-white shadow-sm md:col-span-2 flex flex-col justify-between">
+        <Card className="border border-slate-200 bg-white shadow-sm md:col-span-2 flex flex-col justify-between rounded-xl">
           <div>
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 bg-slate-50/50 py-4">
               <div className="flex items-center space-x-3">
