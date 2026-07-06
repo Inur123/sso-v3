@@ -83,7 +83,7 @@ Membuat instansi Client SDK untuk memanggil fungsi-fungsi autentikasi Better Aut
 Bagian ini merekam fitur-fitur baru dan optimalisasi stabilitas UI/UX yang telah diintegrasikan ke dalam proyek.
 
 ### Langkah 14: Pembuatan Fitur Log Audit Sistem (Admin Console)
-*   **Backend:** Menambahkan rute `GET /api/admin/audit-logs` dan `GET /api/admin/audit-logs/:id`.
+*   **Backend:** Menambahkan rute `GET /api/admin/audit-logs` and `GET /api/admin/audit-logs/:id`.
 *   **Tabel Ringkas:** Log audit utama dipangkas menjadi kolom No, Waktu, Aksi, dan Pelaku dengan ikon detail link (ikon mata).
 *   **Halaman Detail:** Membuat rute dinamis `/audit-logs/[id]` dan skeleton shimmer detailnya.
 
@@ -113,3 +113,17 @@ Bagian ini merekam fitur-fitur baru dan optimalisasi stabilitas UI/UX yang telah
 ### Langkah 20: Halaman Formulir Sandi Baru (`/reset-password`)
 *   Membuat form atur ulang kata sandi yang membaca query parameter token dari surel (`?token=...`).
 *   Dilengkapi tombol toggle mata kata sandi ganda (Sandi Baru & Konfirmasi Sandi Baru), validasi kecocokan sandi, dan redirect otomatis kembali ke halaman `/login` dengan notifikasi sukses.
+
+---
+
+## 🟢 BAGIAN 5: LOGIN & REGISTER SOSIAL GOOGLE (Sudah Selesai Dikerjakan)
+
+### Langkah 21: Pendaftaran Kredensial (Google Cloud Console)
+*   Membuat kredensial OAuth Client ID dengan tipe *Web Application* di Google Cloud Console.
+*   Mendaftarkan redirect URI: `http://localhost:5001/api/auth/callback/google`.
+*   Menyimpan Client ID dan Client Secret ke berkas `backend/.env`.
+
+### Langkah 22: Integrasi Social Provider (Backend & Frontend)
+*   **Backend:** Menambahkan konfigurasi `socialProviders.google` pada berkas `backend/src/auth.ts` untuk memproses autentikasi Google OAuth.
+*   **Frontend:** Menambahkan tombol "Google" lebar penuh (*full-width*) di halaman login dan register, serta menghapus integrasi login GitHub demi kebersihan visual (eksklusif masuk lewat akun Google).
+*   **Koreksi Lokalisasi:** Menerjemahkan error login bahasa Inggris menjadi `"Email atau password tidak sesuai"` demi pengalaman pengguna lokal yang optimal.
