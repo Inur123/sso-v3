@@ -303,6 +303,7 @@ export const auth = betterAuth({
     useSecureCookies: true, // Wajib true agar browser menerima cookie Cross-Origin (SameSite=none harus Secure)
     cookie: {
       sameSite: "none",
+      domain: process.env.COOKIE_DOMAIN || undefined, // Mengizinkan sharing cookie antar subdomain di VPS (.msdp.web.id)
     },
   },
   plugins: [
