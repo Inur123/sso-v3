@@ -26,27 +26,37 @@ export default async function DashboardLayout({
   // Membaca cookie secara sinkron di sisi server Next.js
   const cookieStore = await cookies();
   const allCookies = cookieStore.toString();
+  console.log("=== FE DEBUG: Cookies received from browser ===", allCookies);
 
   let sessionUser: UserProfile | null = null;
   let isAdmin = false;
 
   try {
+    const targetUrl = `${API_URL}/api/auth/get-session`;
+    console.log("=== FE DEBUG: Fetching session from backend ===", targetUrl);
+    
     // Verifikasi sesi langsung ke backend API menggunakan cookie yang dibawa browser
-    const response = await fetch(`${API_URL}/api/auth/get-session`, {
+    const response = await fetch(targetUrl, {
       headers: {
         Cookie: allCookies,
       },
       cache: "no-store",
     });
 
+    console.log("=== FE DEBUG: Backend Response Status ===", response.status);
+
     if (response.ok) {
       const sessionData = await response.json();
+      console.log("=== FE DEBUG: Session data received ===", sessionData);
       if (sessionData?.user) {
         sessionUser = sessionData.user;
         isAdmin =
           sessionData.user.role === "admin" ||
           sessionData.user.email === "admin@gmail.com";
       }
+    } else {
+      const errorText = await response.text();
+      console.log("=== FE DEBUG: Session fetch failed body ===", errorText);
     }
   } catch (err) {
     console.error("Gagal melakukan verifikasi sesi server-side:", err);
