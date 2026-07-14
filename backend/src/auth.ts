@@ -300,7 +300,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",") : [],
   advanced: {
-    useSecureCookies: false, // Setel false agar browser HTTP localhost bisa menyimpan cookie dari HTTPS backend
+    useSecureCookies: true, // Wajib true agar browser menerima cookie Cross-Origin (SameSite=none harus Secure)
     cookie: {
       sameSite: "none",
     },
