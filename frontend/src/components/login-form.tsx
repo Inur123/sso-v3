@@ -31,8 +31,33 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast.error("Silakan masukkan alamat email Anda terlebih dahulu.");
+      setError("Silakan masukkan alamat email Anda terlebih dahulu.");
+      return;
+    }
+    setResendingVerification(true);
+    try {
+      const { error: resendError } = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: `${window.location.origin}/login?verified=true`,
+      });
+      if (resendError) {
+        toast.error(resendError.message || "Gagal mengirim ulang email verifikasi.");
+      } else {
+        toast.success("Email verifikasi baru berhasil dikirim! Silakan periksa kotak masuk Anda.");
+      }
+    } catch {
+      toast.error("Terjadi kesalahan jaringan.");
+    } finally {
+      setResendingVerification(false);
+    }
+  };
 
   // Efek untuk memantau notifikasi register sukses, logout sukses, reset password, dan error Oauth dari URL params / sessionStorage
   useEffect(() => {
@@ -43,11 +68,25 @@ export function LoginForm({
 
     if (errorParam) {
       const decodedError = decodeURIComponent(errorParam);
-      toast.error(decodedError);
-      if (
-        decodedError !== "Akun Anda telah dinonaktifkan oleh administrator."
-      ) {
-        setError(decodedError);
+
+      // Akun Google belum terdaftar → tampilkan sonner saja, tetap di login
+      if (decodedError === "google_not_registered") {
+        window.history.replaceState(null, "", "/login");
+        toast.error("Akun tidak ditemukan. Silakan daftar terlebih dahulu.");
+        return;
+      }
+
+      if (decodedError === "EmailNotVerified" || decodedError === "email_not_verified") {
+        const msg = "Email Anda belum diverifikasi. Silakan periksa kotak masuk email Anda.";
+        setError(msg);
+        toast.error(msg);
+      } else {
+        toast.error(decodedError);
+        if (
+          decodedError !== "Akun Anda telah dinonaktifkan oleh administrator."
+        ) {
+          setError(decodedError);
+        }
       }
       window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
     }
@@ -56,6 +95,7 @@ export function LoginForm({
       toast.info(
         "Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk melakukan verifikasi akun sebelum masuk.",
       );
+      setError("Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk verifikasi akun.");
       window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
     }
 
@@ -155,8 +195,18 @@ export function LoginForm({
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-50 p-3 text-xs text-red-600 border border-red-100">
-            {error}
+          <div className="rounded-md bg-red-50 p-3 text-xs text-red-600 border border-red-100 flex flex-col gap-2">
+            <span>{error}</span>
+            {(error.includes("belum") || error.toLowerCase().includes("verify") || error.toLowerCase().includes("verified") || error.includes("daftar")) && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification}
+                className="text-left font-semibold underline text-red-700 hover:text-red-900 cursor-pointer disabled:opacity-50 w-fit"
+              >
+                {resendingVerification ? "Mengirim ulang..." : "Kirim ulang email verifikasi"}
+              </button>
+            )}
           </div>
         )}
 

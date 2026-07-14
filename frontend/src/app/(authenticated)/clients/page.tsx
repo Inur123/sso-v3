@@ -3,6 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -136,7 +145,7 @@ export default function ClientsPage() {
     }
   };
 
-  if (isPending || loading) {
+  if (isPending || (loading && clients.length === 0)) {
     return <ClientsSkeleton />;
   }
 
@@ -302,7 +311,7 @@ export default function ClientsPage() {
 
                 {/* Panel Kontrol Pagination Bawaan Shadcn UI */}
                 {clients.length > 0 && (
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-slate-100 bg-slate-50/30">
+                  <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/30">
                     <div className="text-xs text-slate-500">
                       Menampilkan{" "}
                       <span className="font-bold text-slate-700">
@@ -318,47 +327,87 @@ export default function ClientsPage() {
                       </span>{" "}
                       aplikasi
                     </div>
-                    <div className="flex items-center space-x-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(prev - 1, 1))
-                        }
-                        disabled={currentPage === 1}
-                        className="h-8 text-xs cursor-pointer px-2.5"
-                      >
-                        Sebelumnya
-                      </Button>
-                      {Array.from({ length: totalPages }).map((_, idx) => (
-                        <Button
-                          key={idx}
-                          variant={
-                            currentPage === idx + 1 ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setCurrentPage(idx + 1)}
-                          className={`h-8 w-8 text-xs cursor-pointer`}
-                        >
-                          {idx + 1}
-                        </Button>
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(prev + 1, totalPages),
-                          )
-                        }
-                        disabled={
-                          currentPage === totalPages || totalPages === 0
-                        }
-                        className="h-8 text-xs cursor-pointer px-2.5"
-                      >
-                        Selanjutnya
-                      </Button>
-                    </div>
+                    <Pagination className="mx-0 w-auto justify-end">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            text="Sebelumnya"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage((prev) => Math.max(prev - 1, 1));
+                            }}
+                            aria-disabled={currentPage === 1}
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-40"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                        {(totalPages <= 7
+                          ? Array.from({ length: totalPages }, (_, i) => i + 1)
+                          : currentPage <= 4
+                            ? [1, 2, 3, 4, 5, "...", totalPages]
+                            : currentPage >= totalPages - 3
+                              ? [
+                                  1,
+                                  "...",
+                                  totalPages - 4,
+                                  totalPages - 3,
+                                  totalPages - 2,
+                                  totalPages - 1,
+                                  totalPages,
+                                ]
+                              : [
+                                  1,
+                                  "...",
+                                  currentPage - 1,
+                                  currentPage,
+                                  currentPage + 1,
+                                  "...",
+                                  totalPages,
+                                ]
+                        ).map((page, idx) =>
+                          page === "..." ? (
+                            <PaginationItem key={`e-${idx}`}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          ) : (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                isActive={currentPage === page}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setCurrentPage(page as number);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ),
+                        )}
+                        <PaginationItem>
+                          <PaginationNext
+                            text="Selanjutnya"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage((prev) =>
+                                Math.min(prev + 1, totalPages),
+                              );
+                            }}
+                            aria-disabled={
+                              currentPage === totalPages || totalPages === 0
+                            }
+                            className={
+                              currentPage === totalPages || totalPages === 0
+                                ? "pointer-events-none opacity-40"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
                 )}
               </>

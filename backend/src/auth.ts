@@ -110,7 +110,27 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user) => {
+          // Google OAuth/social login selalu memberi emailVerified=true dari provider
+          // Kita blokir semua pembuatan akun baru via Google → harus register manual
+          if (user.emailVerified) {
+            throw new APIError("UNAUTHORIZED", {
+              message: "google_not_registered",
+            });
+          }
+        },
         after: async (user) => {
+          // Safety net: jika user lolos dari before hook dengan emailVerified=true
+          // (terjadi pada beberapa versi Better Auth di social login), hapus langsung
+          if (user.emailVerified && user.image?.includes("googleusercontent.com")) {
+            try {
+              await db.delete(schema.user).where(eq(schema.user.id, user.id));
+            } catch (e) {
+              console.error("Gagal menghapus akun Google yang tidak sah:", e);
+            }
+            return; // Jangan tulis audit log untuk akun yang dihapus
+          }
+
           try {
             await db.insert(schema.auditLog).values({
               id: globalThis.crypto.randomUUID(),
@@ -136,10 +156,17 @@ export const auth = betterAuth({
             .where(eq(schema.user.id, session.userId))
             .limit(1);
 
-          if (foundUser.length > 0 && !foundUser[0].isActive) {
-            throw new APIError("UNAUTHORIZED", {
-              message: "Akun Anda telah dinonaktifkan oleh administrator.",
-            });
+          if (foundUser.length > 0) {
+            if (!foundUser[0].isActive) {
+              throw new APIError("UNAUTHORIZED", {
+                message: "Akun Anda telah dinonaktifkan oleh administrator.",
+              });
+            }
+            if (!foundUser[0].emailVerified) {
+              throw new APIError("UNAUTHORIZED", {
+                message: "Email belum diverifikasi. Silakan periksa kotak masuk email Anda.",
+              });
+            }
           }
         },
         after: async (session) => {
@@ -180,6 +207,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true, // Login dengan email dan password aktif
     requireEmailVerification: true, // Wajib verifikasi email sebelum bisa login
+    autoSignIn: false, // Matikan auto login setelah sign up agar wajib verifikasi email
     passwordResetTokenExpiresIn: 300, // Masa aktif token reset password: 5 menit (300 detik)
     sendResetPassword: async ({ user, url }: { user: any; url: string }) => {
       try {

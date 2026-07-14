@@ -53,7 +53,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar serverIsAdmin={isAdmin} serverUser={sessionUser} />
-      <SidebarInset className="bg-slate-50">
+      <SidebarInset className="bg-slate-50 min-w-0 overflow-hidden">
         {/* Top Navbar Persisten (Sticky & Glassmorphism) */}
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 backdrop-blur-md px-6">
           <div className="flex items-center gap-2">

@@ -174,7 +174,12 @@ export default function SessionsPage() {
 
       <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
         <CardContent className="p-0">
-          {!loadingLogs && ssoLogs.length === 0 ? (
+          {loadingLogs && ssoLogs.length === 0 ? (
+            /* Initial loading — jangan tampilkan tabel kosong */
+            <div className="py-16 flex items-center justify-center">
+              <div className="h-5 w-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+            </div>
+          ) : !loadingLogs && ssoLogs.length === 0 ? (
             <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center space-y-2">
               <History className="h-8 w-8 text-slate-300" />
               <p className="font-semibold text-slate-600 mt-2">

@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../db.js";
-import { oauthClient, user, auditLog } from "../schema.js";
+import { oauthClient, user, auditLog, verification } from "../schema.js";
 import { eq, desc, ne } from "drizzle-orm";
 import * as crypto from "crypto";
 
@@ -219,6 +219,20 @@ export async function adminRoutes(fastify: FastifyInstance) {
     }
 
     await db.delete(user).where(eq(user.id, id));
+
+    // Simpan email sebagai blacklist agar tidak bisa daftar/login ulang tanpa verifikasi baru
+    try {
+      await db.insert(verification).values({
+        id: crypto.randomUUID(),
+        identifier: `deleted_email:${foundUser[0].email}`,
+        value: "blacklisted",
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000 * 10), // 10 tahun
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    } catch (blacklistErr) {
+      fastify.log.error(blacklistErr, "Gagal menyimpan blacklist email");
+    }
 
     // Catat ke Audit Log
     try {

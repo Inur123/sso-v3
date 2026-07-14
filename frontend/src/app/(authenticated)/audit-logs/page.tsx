@@ -4,6 +4,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -67,7 +76,7 @@ export default function AuditLogsPage() {
 
   const fetchLogs = useCallback(async () => {
     if (!isAdmin) return;
-    setLoading(true);
+    // Tidak set loading=true di sini agar tidak menampilkan skeleton saat re-fetch
     try {
       const response = await fetch(`${API_URL}/api/admin/audit-logs`, {
         headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
@@ -236,18 +245,18 @@ export default function AuditLogsPage() {
     }
   };
 
-  if (isPending || loading) return <AuditLogsSkeleton />;
+  if (isPending || (loading && logs.length === 0)) return <AuditLogsSkeleton />;
   if (!isAdmin) return null;
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
+    <div className="flex-1 w-full max-w-full min-w-0 overflow-hidden space-y-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
       {/* Header */}
-      <div>
+      <div className="w-full">
         <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
           <ClipboardList className="h-5.5 w-5.5 text-indigo-600" />
           <span>Log Audit Aktivitas</span>
         </h2>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-slate-500 mt-1 break-words whitespace-normal max-w-full">
           Pantau seluruh aktivitas otentikasi pengguna dan manipulasi data klien
           SSO secara real-time.
         </p>
@@ -256,7 +265,7 @@ export default function AuditLogsPage() {
       {/* ── Filter Bar ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
         {/* Filter Aksi */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <select
             id="action-filter"
             value={actionFilter}
@@ -274,7 +283,7 @@ export default function AuditLogsPage() {
         </div>
 
         {/* Filter User / Pelaku — Combobox dengan search */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <button
             id="user-filter-btn"
             type="button"
@@ -309,38 +318,37 @@ export default function AuditLogsPage() {
                 />
               </div>
               {/* Options */}
-              <ul className="max-h-52 overflow-y-auto py-1">
+              <ul className="max-h-48 overflow-y-auto py-1">
                 <li>
                   <button
                     type="button"
                     onClick={() => handleUserFilter("all")}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer text-slate-600"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer text-slate-700 font-medium"
                   >
                     <Check
-                      className={`h-3.5 w-3.5 ${userFilter === "all" ? "text-indigo-600" : "invisible"}`}
+                      className={`h-3.5 w-3.5 shrink-0 ${userFilter === "all" ? "text-indigo-600" : "invisible"}`}
                     />
-                    Semua User / Pelaku
+                    <span>Semua User / Pelaku</span>
                   </button>
                 </li>
-                {filteredUserOptions.length === 0 && (
-                  <li className="px-3 py-3 text-xs text-slate-400 text-center">
-                    Tidak ditemukan
-                  </li>
-                )}
-                {filteredUserOptions.map((u) => (
-                  <li key={u}>
-                    <button
-                      type="button"
-                      onClick={() => handleUserFilter(u)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer text-slate-700"
-                    >
-                      <Check
-                        className={`h-3.5 w-3.5 shrink-0 ${userFilter === u ? "text-indigo-600" : "invisible"}`}
-                      />
-                      <span className="truncate">{u}</span>
-                    </button>
-                  </li>
-                ))}
+                {uniqueUsers
+                  .filter((u) =>
+                    u.toLowerCase().includes(userSearch.toLowerCase()),
+                  )
+                  .map((u) => (
+                    <li key={u}>
+                      <button
+                        type="button"
+                        onClick={() => handleUserFilter(u)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer text-slate-700"
+                      >
+                        <Check
+                          className={`h-3.5 w-3.5 shrink-0 ${userFilter === u ? "text-indigo-600" : "invisible"}`}
+                        />
+                        <span className="truncate">{u}</span>
+                      </button>
+                    </li>
+                  ))}
               </ul>
             </div>
           )}
@@ -352,10 +360,11 @@ export default function AuditLogsPage() {
           variant="outline"
           onClick={handleReset}
           disabled={!isFiltered}
-          className="h-[38px] w-[38px] p-0 shrink-0 rounded-lg border-slate-200 hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-40 cursor-pointer"
+          className="w-full sm:w-[38px] h-[38px] p-0 shrink-0 flex items-center justify-center gap-2 rounded-lg border-slate-200 bg-white text-slate-500 hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors disabled:opacity-40 cursor-pointer text-xs"
           title="Reset Filter"
         >
           <X className="h-4 w-4" />
+          <span className="sm:hidden font-medium">Reset Filter</span>
         </Button>
       </div>
 
@@ -374,7 +383,7 @@ export default function AuditLogsPage() {
           </div>
         </Card>
       ) : (
-        <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
+        <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl w-full max-w-full">
           <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4">
             <CardTitle className="text-sm font-semibold text-slate-800">
               Histori Aktivitas Sistem &amp; User
@@ -385,7 +394,7 @@ export default function AuditLogsPage() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 w-full overflow-hidden">
             {filteredLogs.length === 0 ? (
               <div className="text-center text-slate-500 py-12 text-xs">
                 {isFiltered
@@ -394,11 +403,11 @@ export default function AuditLogsPage() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto w-full">
-                  <Table>
+                <div className="w-full overflow-x-auto border-t border-slate-100">
+                  <table className="w-full min-w-[800px] table-fixed text-sm caption-bottom">
                     <TableHeader>
                       <TableRow className="border-b border-slate-200 bg-slate-50/70">
-                        <TableHead className="w-16 text-center font-bold text-slate-500">
+                        <TableHead className="w-12 text-center font-bold text-slate-500">
                           No
                         </TableHead>
                         <TableHead className="w-44 font-bold text-slate-500">
@@ -457,12 +466,12 @@ export default function AuditLogsPage() {
                         );
                       })}
                     </TableBody>
-                  </Table>
+                  </table>
                 </div>
 
                 {/* Pagination */}
                 {filteredLogs.length > 0 && (
-                  <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/30">
+                  <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/30">
                     <div className="text-xs text-slate-500">
                       Menampilkan{" "}
                       <span className="font-bold text-slate-700">
@@ -484,45 +493,50 @@ export default function AuditLogsPage() {
                       </span>{" "}
                       log aktivitas
                     </div>
-                    <div className="flex items-center space-x-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setCurrentPage((p) => Math.max(p - 1, 1))
-                        }
-                        disabled={currentPage === 1}
-                        className="h-8 text-xs cursor-pointer px-2.5"
-                      >
-                        Sebelumnya
-                      </Button>
-                      {Array.from({ length: totalPages }).map((_, idx) => (
-                        <Button
-                          key={idx}
-                          variant={
-                            currentPage === idx + 1 ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setCurrentPage(idx + 1)}
-                          className="h-8 w-8 text-xs cursor-pointer"
-                        >
-                          {idx + 1}
-                        </Button>
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setCurrentPage((p) => Math.min(p + 1, totalPages))
-                        }
-                        disabled={
-                          currentPage === totalPages || totalPages === 0
-                        }
-                        className="h-8 text-xs cursor-pointer px-2.5"
-                      >
-                        Selanjutnya
-                      </Button>
-                    </div>
+                    <Pagination className="mx-0 w-auto justify-end">
+                      <PaginationContent>
+                          <PaginationItem>
+                      <PaginationPrevious
+                              text="Sebelumnya"
+                              onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.max(p - 1, 1)); }}
+                              aria-disabled={currentPage === 1}
+                              className={currentPage === 1 ? "pointer-events-none opacity-40" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          {(totalPages <= 7
+                            ? Array.from({ length: totalPages }, (_, i) => i + 1)
+                            : currentPage <= 4
+                            ? [1, 2, 3, 4, 5, "...", totalPages]
+                            : currentPage >= totalPages - 3
+                            ? [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+                            : [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages]
+                          ).map((page, idx) =>
+                            page === "..." ? (
+                              <PaginationItem key={`e-${idx}`}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            ) : (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  isActive={currentPage === page}
+                                  onClick={(e) => { e.preventDefault(); setCurrentPage(page as number); }}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            )
+                          )}
+                          <PaginationItem>
+                            <PaginationNext
+                              text="Selanjutnya"
+                              onClick={(e) => { e.preventDefault(); setCurrentPage((p) => Math.min(p + 1, totalPages)); }}
+                              aria-disabled={currentPage === totalPages || totalPages === 0}
+                              className={(currentPage === totalPages || totalPages === 0) ? "pointer-events-none opacity-40" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
                 )}
               </>

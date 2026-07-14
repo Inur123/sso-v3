@@ -67,7 +67,7 @@ fastify.route({
 
     const response = await auth.handler(webReq);
 
-    // Deteksi jika OAuth callback menghasilkan error akun dinonaktifkan, lalu redirect ke frontend
+    // Deteksi jika OAuth callback menghasilkan error akun dinonaktifkan atau email belum diverifikasi, lalu redirect ke frontend
     if (request.url.includes("/api/auth/callback/")) {
       const responseStatus = response.status;
       if (responseStatus >= 400) {
@@ -80,6 +80,19 @@ fastify.route({
               : "http://localhost:3000";
             const encodedMessage = encodeURIComponent("Akun Anda telah dinonaktifkan oleh administrator.");
             return reply.redirect(`${frontendUrl}/login?error=${encodedMessage}`);
+          }
+          if (bodyText.includes("Email belum diverifikasi")) {
+            const frontendUrl = process.env.TRUSTED_ORIGINS
+              ? process.env.TRUSTED_ORIGINS.split(",")[0]
+              : "http://localhost:3000";
+            const encodedMessage = encodeURIComponent("email_not_verified");
+            return reply.redirect(`${frontendUrl}/login?error=${encodedMessage}`);
+          }
+          if (bodyText.includes("google_not_registered")) {
+            const frontendUrl = process.env.TRUSTED_ORIGINS
+              ? process.env.TRUSTED_ORIGINS.split(",")[0]
+              : "http://localhost:3000";
+            return reply.redirect(`${frontendUrl}/register?error=google_not_registered`);
           }
         } catch (e) {
           fastify.log.error(e, "Error cloning auth response");
