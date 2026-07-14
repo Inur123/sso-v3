@@ -8,6 +8,12 @@ import { adminRoutes } from "./routes/admin.js";
 import { pool } from "./db.js";
 
 // Inisialisasi Server Fastify dengan JSON logging bawaan (Enterprise Audit Standard)
+console.log("=== BACKEND ENV DEBUG ===");
+console.log("COOKIE_DOMAIN:", process.env.COOKIE_DOMAIN);
+console.log("TRUSTED_ORIGINS:", process.env.TRUSTED_ORIGINS);
+console.log("BETTER_AUTH_URL:", process.env.BETTER_AUTH_URL);
+console.log("=========================");
+
 const fastify = Fastify({
   logger: {
     level: "info",
