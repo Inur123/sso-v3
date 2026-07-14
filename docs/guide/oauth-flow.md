@@ -35,7 +35,7 @@ Aplikasi klien harus mengalihkan browser pengguna ke URL otorisasi SSO:
 
 **Contoh URL:**
 ```http
-GET http://localhost:5001/oauth2/authorize?
+GET https://be.sso.msdp.web.id/api/auth/oauth2/authorize?
   response_type=code
   &client_id=CLIENT_ID_ANDA
   &redirect_uri=CALLBACK_URL_ANDA
@@ -60,7 +60,7 @@ Aplikasi backend Anda harus mengirimkan permintaan `POST` di balik layar ke toke
 
 **Request HTTP:**
 ```http
-POST http://localhost:5001/oauth2/token
+POST https://be.sso.msdp.web.id/api/auth/oauth2/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code
@@ -87,7 +87,7 @@ Gunakan `access_token` yang diperoleh untuk meminta data profil lengkap pengguna
 
 **Request HTTP:**
 ```http
-GET http://localhost:5001/oauth2/userinfo
+GET https://be.sso.msdp.web.id/api/auth/oauth2/userinfo
 Authorization: Bearer ACCESS_TOKEN_ANDA
 ```
 

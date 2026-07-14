@@ -2,6 +2,9 @@
 
 Berikut adalah referensi lengkap URL endpoints yang disediakan oleh Server Backend SSO untuk melakukan integrasi otentikasi.
 
+*   **Base URL (VPS):** `https://be.sso.msdp.web.id/api/auth`
+*   **Base URL (Lokal):** `http://localhost:5001/api/auth`
+
 ---
 
 ## 1. Authorization Endpoint
