@@ -39,7 +39,7 @@ interface AuditLog {
 }
 
 // Pindahkan konstanta ke tingkat modul luar agar dependensi useCallback stabil
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const ADMIN_TOKEN = "admin-super-secret-token";
 
 const ALL_ACTIONS = [

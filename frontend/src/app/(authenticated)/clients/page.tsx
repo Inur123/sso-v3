@@ -59,7 +59,7 @@ export default function ClientsPage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
   const ADMIN_TOKEN = "admin-super-secret-token";
 
   const isAdmin = session?.user?.email === "admin@gmail.com";

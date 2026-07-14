@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
@@ -84,21 +87,21 @@ fastify.route({
           if (bodyText.includes("Akun Anda telah dinonaktifkan oleh administrator")) {
             const frontendUrl = process.env.TRUSTED_ORIGINS
               ? process.env.TRUSTED_ORIGINS.split(",")[0]
-              : "http://localhost:3000";
+              : "";
             const encodedMessage = encodeURIComponent("Akun Anda telah dinonaktifkan oleh administrator.");
             return reply.redirect(`${frontendUrl}/login?error=${encodedMessage}`);
           }
           if (bodyText.includes("Email belum diverifikasi")) {
             const frontendUrl = process.env.TRUSTED_ORIGINS
               ? process.env.TRUSTED_ORIGINS.split(",")[0]
-              : "http://localhost:3000";
+              : "";
             const encodedMessage = encodeURIComponent("email_not_verified");
             return reply.redirect(`${frontendUrl}/login?error=${encodedMessage}`);
           }
           if (bodyText.includes("google_not_registered")) {
             const frontendUrl = process.env.TRUSTED_ORIGINS
               ? process.env.TRUSTED_ORIGINS.split(",")[0]
-              : "http://localhost:3000";
+              : "";
             return reply.redirect(`${frontendUrl}/register?error=google_not_registered`);
           }
         } catch (e) {

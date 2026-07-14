@@ -54,7 +54,7 @@ export default function SessionsPage() {
   const { data: session, isPending } = authClient.useSession();
   const isAdmin = session?.user?.email === "admin@gmail.com";
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
   // Fungsi memuat riwayat log masuk aplikasi SSO riil dari database Fastify API
   const fetchSSOLogs = useCallback(async () => {

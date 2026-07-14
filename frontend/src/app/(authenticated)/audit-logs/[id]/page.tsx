@@ -19,7 +19,7 @@ interface AuditLog {
   userName: string | null;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const ADMIN_TOKEN = "admin-super-secret-token";
 
 export default function AuditLogDetailPage({

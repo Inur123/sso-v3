@@ -106,7 +106,7 @@ export const auth = betterAuth({
     provider: "pg", // PostgreSQL
     schema: schema, // Menyediakan skema agar model "user" terdeteksi
   }),
-  errorURL: `${process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",")[0] : "http://localhost:3000"}/login`,
+  errorURL: `${process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",")[0] : ""}/login`,
   databaseHooks: {
     user: {
       create: {

@@ -21,7 +21,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
   // Membaca cookie secara sinkron di sisi server Next.js
   const cookieStore = await cookies();
