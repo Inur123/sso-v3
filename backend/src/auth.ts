@@ -300,9 +300,9 @@ export const auth = betterAuth({
   },
   trustedOrigins: process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",") : [],
   advanced: {
-    useSecureCookies: true, // Wajib true agar browser menerima cookie Cross-Origin (SameSite=none harus Secure)
-    cookie: {
-      sameSite: "none",
+    useSecureCookies: true, // Wajib true agar browser menerima cookie Cross-Origin
+    crossSubDomainCookies: {
+      enabled: process.env.COOKIE_DOMAIN ? true : false,
       domain: process.env.COOKIE_DOMAIN || undefined, // Mengizinkan sharing cookie antar subdomain di VPS (.msdp.web.id)
     },
   },
