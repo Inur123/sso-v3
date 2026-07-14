@@ -27,11 +27,18 @@ export default function ConsentPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const clientId = params.get("client_id") || "";
+
     // Memuat detail permintaan akses OIDC
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = authClient as any;
     client.oauth2
-      .getConsent()
+      .getConsent({
+        query: {
+          id: clientId,
+        },
+      })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((res: any) => {
         if (res.data) {
