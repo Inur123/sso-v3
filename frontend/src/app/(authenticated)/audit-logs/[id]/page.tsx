@@ -185,13 +185,13 @@ export default function AuditLogDetailPage({
         <span className="text-slate-900 font-medium">Detail Log</span>
       </div>
 
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+      <div className="flex items-center justify-between gap-4 w-full">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
             <ClipboardList className="h-5.5 w-5.5 text-indigo-600" />
             <span>Detail Aktivitas Log</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 hidden sm:block">
             Rincian data aktivitas sistem dan pengguna berdasar ID: {log.id}
           </p>
         </div>
@@ -200,7 +200,7 @@ export default function AuditLogDetailPage({
           variant="outline"
           size="sm"
           onClick={() => router.push("/audit-logs")}
-          className="h-9 text-xs font-semibold cursor-pointer flex items-center space-x-1.5 self-start"
+          className="h-9 text-xs font-semibold cursor-pointer flex items-center space-x-1.5 shrink-0"
         >
           <ChevronLeft className="h-4 w-4" />
           <span>Kembali</span>

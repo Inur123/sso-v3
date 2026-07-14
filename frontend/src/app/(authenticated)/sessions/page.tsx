@@ -134,7 +134,7 @@ export default function SessionsPage() {
     }));
   };
 
-  if (isPending) {
+  if (isPending || (loadingLogs && ssoLogs.length === 0)) {
     return <SessionsSkeleton />;
   }
 
@@ -145,7 +145,7 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
+    <div className="flex-1 w-full max-w-full min-w-0 overflow-hidden space-y-6 p-4 md:p-6 bg-slate-50/40 min-h-screen">
       {/* Breadcrumbs */}
       <div className="flex items-center space-x-2 text-xs text-slate-500">
         <span
@@ -172,14 +172,9 @@ export default function SessionsPage() {
         </div>
       </div>
 
-      <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
-        <CardContent className="p-0">
-          {loadingLogs && ssoLogs.length === 0 ? (
-            /* Initial loading — jangan tampilkan tabel kosong */
-            <div className="py-16 flex items-center justify-center">
-              <div className="h-5 w-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
-            </div>
-          ) : !loadingLogs && ssoLogs.length === 0 ? (
+      <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl w-full max-w-full">
+        <CardContent className="p-0 w-full overflow-hidden">
+          {ssoLogs.length === 0 ? (
             <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center space-y-2">
               <History className="h-8 w-8 text-slate-300" />
               <p className="font-semibold text-slate-600 mt-2">
@@ -191,8 +186,8 @@ export default function SessionsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto w-full">
-              <Table>
+            <div className="w-full overflow-x-auto border-t border-slate-100">
+              <table className="w-full min-w-[800px] table-fixed text-sm caption-bottom">
                 <TableHeader>
                   <TableRow className="border-b border-slate-200 bg-slate-50/50">
                     <TableHead className="font-bold text-slate-700 text-[10px] uppercase tracking-wider py-4 w-12 text-center">
@@ -216,34 +211,7 @@ export default function SessionsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loadingLogs
-                    ? // Baris loading skeleton (shimmer)
-                      Array.from({ length: 3 }).map((_, idx) => (
-                        <TableRow
-                          key={idx}
-                          className="border-b border-slate-100 animate-pulse"
-                        >
-                          <TableCell className="text-center py-4">
-                            <div className="h-3.5 w-4 bg-slate-200 rounded mx-auto" />
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="h-3.5 w-32 bg-slate-200 rounded" />
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="h-7 w-48 bg-slate-200/60 rounded-md" />
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="h-3.5 w-36 bg-slate-200 rounded" />
-                          </TableCell>
-                          <TableCell className="py-4">
-                            <div className="h-6 w-20 bg-slate-200/50 rounded-full" />
-                          </TableCell>
-                          <TableCell className="text-right py-4 pr-6">
-                            <div className="h-8 w-24 bg-slate-200/40 rounded-md ml-auto" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    : ssoLogs.map((log, idx) => {
+                  {ssoLogs.map((log, idx) => {
                         const isTokenVisible = !!visibleTokenIds[log.id];
                         const displayToken = isTokenVisible
                           ? log.token
@@ -267,7 +235,7 @@ export default function SessionsPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7 text-slate-400 hover:text-slate-700 cursor-pointer"
+                                  className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer rounded-md transition-colors"
                                   onClick={() => toggleTokenVisibility(log.id)}
                                   title={
                                     isTokenVisible
@@ -276,9 +244,9 @@ export default function SessionsPage() {
                                   }
                                 >
                                   {isTokenVisible ? (
-                                    <EyeOff className="h-3.5 w-3.5" />
+                                    <EyeOff className="h-4.5 w-4.5" />
                                   ) : (
-                                    <Eye className="h-3.5 w-3.5" />
+                                    <Eye className="h-4.5 w-4.5" />
                                   )}
                                 </Button>
                               </div>
@@ -306,7 +274,7 @@ export default function SessionsPage() {
                         );
                       })}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           )}
         </CardContent>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ActiveHeaderTitle } from "@/components/active-header-title";
+import { ScrollResetContainer } from "@/components/scroll-reset-container";
 
 interface UserProfile {
   id: string;
@@ -53,7 +54,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar serverIsAdmin={isAdmin} serverUser={sessionUser} />
-      <SidebarInset className="bg-slate-50 min-w-0 overflow-hidden">
+      <SidebarInset className="bg-slate-50 flex flex-col h-screen overflow-hidden min-w-0">
         {/* Top Navbar Persisten (Sticky & Glassmorphism) */}
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 backdrop-blur-md px-6">
           <div className="flex items-center gap-2">
@@ -63,8 +64,10 @@ export default async function DashboardLayout({
           </div>
         </header>
 
-        {/* Area Konten Dinamis yang akan dimuat ulang (hanya ini yang refresh) */}
-        {children}
+        {/* Area Konten Dinamis yang scrollable secara mandiri */}
+        <ScrollResetContainer>
+          {children}
+        </ScrollResetContainer>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -162,23 +162,23 @@ export default function ClientDetailPage({
           <span className="text-slate-900 font-medium">Detail Aplikasi</span>
         </div>
 
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex items-center justify-between gap-4 w-full">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
               <Globe className="h-5.5 w-5.5 text-indigo-600" />
               <span>Detail Aplikasi Klien</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1 hidden sm:block">
               Kelola kredensial dan konfigurasi redirect URI untuk aplikasi{" "}
               {client.name}
             </p>
           </div>
-
+ 
           <Button
             variant="outline"
             size="sm"
             onClick={() => router.push("/clients")}
-            className="h-9 text-xs font-semibold cursor-pointer flex items-center space-x-1.5 self-start"
+            className="h-9 text-xs font-semibold cursor-pointer flex items-center space-x-1.5 shrink-0"
           >
             <ChevronLeft className="h-4 w-4" />
             <span>Kembali</span>

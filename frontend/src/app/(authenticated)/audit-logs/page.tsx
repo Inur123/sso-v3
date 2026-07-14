@@ -452,14 +452,12 @@ export default function AuditLogsPage() {
                               {actor}
                             </TableCell>
                             <TableCell className="text-center">
-                              <Link href={`/audit-logs/${log.id}`}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 rounded-lg cursor-pointer hover:bg-indigo-50 hover:text-indigo-600"
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                </Button>
+                              <Link
+                                href={`/audit-logs/${log.id}`}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
+                                title="Lihat Detail Log"
+                              >
+                                <Eye className="h-4.5 w-4.5" />
                               </Link>
                             </TableCell>
                           </TableRow>

@@ -7,4 +7,8 @@ export const authClient = createAuthClient({
   plugins: [
     oauthProviderClient(),
   ],
+  // Tambahan opsi untuk memastikan credential/cookie selalu disertakan dalam request lintas domain
+  fetchOptions: {
+    credentials: "include",
+  },
 });

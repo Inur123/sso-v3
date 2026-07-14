@@ -265,10 +265,10 @@ export default function UsersPage() {
                             <TableCell className="text-center">
                               <Link
                                 href={`/users/${u.id}`}
-                                className="inline-flex h-8 w-8 items-center justify-center border border-slate-100 rounded-md hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors"
                                 title="Lihat Detail Pengguna"
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-4.5 w-4.5" />
                               </Link>
                             </TableCell>
                           </TableRow>

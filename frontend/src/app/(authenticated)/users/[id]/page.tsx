@@ -193,13 +193,13 @@ export default function UserDetailPage({
         <span className="text-slate-600">Detail Profil</span>
       </div>
 
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+      <div className="flex items-center justify-between gap-4 w-full">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center space-x-2">
             <User className="h-5.5 w-5.5 text-indigo-600" />
             <span>Detail Pengguna</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 hidden sm:block">
             Melihat informasi profil dan status akun dari pengguna SSO terpilih.
           </p>
         </div>
@@ -208,7 +208,7 @@ export default function UserDetailPage({
           variant="outline"
           size="sm"
           onClick={() => router.push("/users")}
-          className="h-9 text-xs font-semibold cursor-pointer flex items-center space-x-1.5 self-start"
+          className="h-9 text-xs font-semibold cursor-pointer flex items-center space-x-1.5 shrink-0"
         >
           <ChevronLeft className="h-4 w-4" />
           <span>Kembali</span>
@@ -218,30 +218,30 @@ export default function UserDetailPage({
       {/* Main Detail Card — full width */}
       <Card className="border border-slate-200 bg-white shadow-sm overflow-hidden rounded-xl">
         {/* Card Header: Avatar + Nama + Email */}
-        <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-5 flex flex-row items-center justify-between">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 font-bold text-lg border border-indigo-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 font-bold text-lg border border-indigo-100 shrink-0">
               {initial}
             </div>
-            <div className="flex flex-col">
-              <CardTitle className="text-base font-bold text-slate-900">
+            <div className="flex flex-col min-w-0">
+              <CardTitle className="text-base font-bold text-slate-900 truncate">
                 {user.name}
               </CardTitle>
-              <span className="text-xs text-slate-400 mt-0.5">
+              <span className="text-xs text-slate-400 mt-0.5 truncate">
                 {user.email}
               </span>
             </div>
           </div>
-
+ 
           {/* Tombol Aksi */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {/* Toggle Status */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleToggleStatus}
               disabled={togglingStatus}
-              className={`h-9 text-xs font-semibold cursor-pointer flex items-center gap-1.5 transition-colors ${
+              className={`h-9 text-xs font-semibold cursor-pointer flex-1 sm:flex-initial flex items-center justify-center gap-1.5 transition-colors ${
                 user.isActive
                   ? "border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                   : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
@@ -254,13 +254,13 @@ export default function UserDetailPage({
               )}
               {user.isActive ? "Nonaktifkan" : "Aktifkan"}
             </Button>
-
+ 
             {/* Hapus */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowDeleteDialog(true)}
-              className="h-9 text-xs font-semibold cursor-pointer flex items-center gap-1.5 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+              className="h-9 text-xs font-semibold cursor-pointer flex-1 sm:flex-initial flex items-center justify-center gap-1.5 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" />
               Hapus

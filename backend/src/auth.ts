@@ -299,6 +299,12 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",") : [],
+  advanced: {
+    useSecureCookies: false, // Setel false agar browser HTTP localhost bisa menyimpan cookie dari HTTPS backend
+    cookie: {
+      sameSite: "none",
+    },
+  },
   plugins: [
     jwt(), // Wajib ada untuk Oauth Provider
     oauthProvider({
