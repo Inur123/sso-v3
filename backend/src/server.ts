@@ -56,7 +56,8 @@ fastify.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
   async handler(request, reply) {
-    const url = new URL(request.url, `http://${request.headers.host}`);
+    const protocol = (request.headers["x-forwarded-proto"] as string) || "http";
+    const url = new URL(request.url, `${protocol}://${request.headers.host}`);
     const headers = fromNodeHeaders(request.headers);
     
     const webReq = new Request(url.toString(), {
