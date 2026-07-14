@@ -306,6 +306,10 @@ export const auth = betterAuth({
       enabled: process.env.COOKIE_DOMAIN ? true : false,
       domain: process.env.COOKIE_DOMAIN || undefined, // Mengizinkan sharing cookie antar subdomain di VPS (.msdp.web.id)
     },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
   },
   plugins: [
     jwt(), // Wajib ada untuk Oauth Provider
