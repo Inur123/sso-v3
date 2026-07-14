@@ -1,6 +1,8 @@
 "use client"
 
 import { RegisterForm } from "@/components/register-form"
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
   return (
@@ -18,7 +20,16 @@ export default function RegisterPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <RegisterForm />
+            <Suspense
+              fallback={
+                <div className="flex flex-col items-center gap-2 text-slate-500 text-sm">
+                  <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+                  <span>Memuat form pendaftaran...</span>
+                </div>
+              }
+            >
+              <RegisterForm />
+            </Suspense>
           </div>
         </div>
       </div>

@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ActiveHeaderTitle } from "@/components/active-header-title";
 import { ScrollResetContainer } from "@/components/scroll-reset-container";
@@ -18,7 +22,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  
+
   // Membaca cookie secara sinkron di sisi server Next.js
   const cookieStore = await cookies();
   const allCookies = cookieStore.toString();
@@ -39,7 +43,9 @@ export default async function DashboardLayout({
       const sessionData = await response.json();
       if (sessionData?.user) {
         sessionUser = sessionData.user;
-        isAdmin = sessionData.user.role === "admin" || sessionData.user.email === "admin@gmail.com";
+        isAdmin =
+          sessionData.user.role === "admin" ||
+          sessionData.user.email === "admin@gmail.com";
       }
     }
   } catch (err) {
