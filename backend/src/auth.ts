@@ -309,8 +309,8 @@ export const auth = betterAuth({
   plugins: [
     jwt(), // Wajib ada untuk Oauth Provider
     oauthProvider({
-      loginPage: `${process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",")[0] : ""}/login`,
-      consentPage: `${process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",")[0] : ""}/consent`,
+      loginPage: `${process.env.SSO_FRONTEND_URL}/login`,
+      consentPage: `${process.env.SSO_FRONTEND_URL}/consent`,
     }),
     bearer(), // Mengaktifkan verifikasi header "Authorization: Bearer <token>" secara native
   ],
