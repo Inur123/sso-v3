@@ -48,9 +48,13 @@ export function LoginForm({
         callbackURL: `${window.location.origin}/login?verified=true`,
       });
       if (resendError) {
-        toast.error(resendError.message || "Gagal mengirim ulang email verifikasi.");
+        toast.error(
+          resendError.message || "Gagal mengirim ulang email verifikasi.",
+        );
       } else {
-        toast.success("Email verifikasi baru berhasil dikirim! Silakan periksa kotak masuk Anda.");
+        toast.success(
+          "Email verifikasi baru berhasil dikirim! Silakan periksa kotak masuk Anda.",
+        );
       }
     } catch {
       toast.error("Terjadi kesalahan jaringan.");
@@ -76,8 +80,12 @@ export function LoginForm({
         return;
       }
 
-      if (decodedError === "EmailNotVerified" || decodedError === "email_not_verified") {
-        const msg = "Email Anda belum diverifikasi. Silakan periksa kotak masuk email Anda.";
+      if (
+        decodedError === "EmailNotVerified" ||
+        decodedError === "email_not_verified"
+      ) {
+        const msg =
+          "Email Anda belum diverifikasi. Silakan periksa kotak masuk email Anda.";
         setError(msg);
         toast.error(msg);
       } else {
@@ -95,7 +103,9 @@ export function LoginForm({
       toast.info(
         "Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk melakukan verifikasi akun sebelum masuk.",
       );
-      setError("Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk verifikasi akun.");
+      setError(
+        "Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk verifikasi akun.",
+      );
       window.history.replaceState(null, "", "/login"); // Bersihkan query params senyap
     }
 
@@ -119,6 +129,21 @@ export function LoginForm({
       toast.success("Anda telah berhasil keluar dari sesi SSO.");
       sessionStorage.removeItem("sso_logout_success"); // Hapus segera agar tidak berulang
     }
+
+    // Jika user sudah login dan ada query parameter OAuth, langsung redirect ke authorize backend
+    const checkActiveSession = async () => {
+      const queryParams = window.location.search;
+      if (
+        queryParams.includes("client_id") &&
+        queryParams.includes("response_type")
+      ) {
+        const session = await authClient.getSession();
+        if (session?.data) {
+          window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/authorize${queryParams}`;
+        }
+      }
+    };
+    checkActiveSession();
   }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -156,8 +181,16 @@ export function LoginForm({
           );
         }
 
-        router.refresh();
-        router.push("/dashboard?login=true");
+        const queryParams = window.location.search;
+        if (
+          queryParams.includes("client_id") &&
+          queryParams.includes("response_type")
+        ) {
+          window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/authorize${queryParams}`;
+        } else {
+          router.refresh();
+          router.push("/dashboard?login=true");
+        }
       }
     } catch {
       const errMsg = "Terjadi kesalahan jaringan";
@@ -197,14 +230,19 @@ export function LoginForm({
         {error && (
           <div className="rounded-md bg-red-50 p-3 text-xs text-red-600 border border-red-100 flex flex-col gap-2">
             <span>{error}</span>
-            {(error.includes("belum") || error.toLowerCase().includes("verify") || error.toLowerCase().includes("verified") || error.includes("daftar")) && (
+            {(error.includes("belum") ||
+              error.toLowerCase().includes("verify") ||
+              error.toLowerCase().includes("verified") ||
+              error.includes("daftar")) && (
               <button
                 type="button"
                 onClick={handleResendVerification}
                 disabled={resendingVerification}
                 className="text-left font-semibold underline text-red-700 hover:text-red-900 cursor-pointer disabled:opacity-50 w-fit"
               >
-                {resendingVerification ? "Mengirim ulang..." : "Kirim ulang email verifikasi"}
+                {resendingVerification
+                  ? "Mengirim ulang..."
+                  : "Kirim ulang email verifikasi"}
               </button>
             )}
           </div>
