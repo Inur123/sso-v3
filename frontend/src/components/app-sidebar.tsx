@@ -57,7 +57,7 @@ export function AppSidebar({ serverIsAdmin, serverUser }: AppSidebarProps) {
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            router.push("/login");
+            window.location.href = "/login";
           },
         },
       });

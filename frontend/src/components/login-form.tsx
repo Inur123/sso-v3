@@ -157,7 +157,7 @@ export function LoginForm({
         }
 
         // Redirection dilakukan hanya setelah promise sign-in selesai ter-resolve dengan sukses
-        router.push("/dashboard?login=true");
+        window.location.href = "/dashboard?login=true";
       }
     } catch {
       const errMsg = "Terjadi kesalahan jaringan";
