@@ -68,6 +68,7 @@ grant_type=authorization_code
 &client_id=CLIENT_ID_ANDA
 &client_secret=CLIENT_SECRET_ANDA
 &redirect_uri=CALLBACK_URL_ANDA
+&code_verifier=VERIFIER_PKCE_ANDA
 ```
 
 **Response HTTP (JSON):**

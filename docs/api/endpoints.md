@@ -16,6 +16,8 @@ Endpoint ini menampilkan halaman login SSO untuk meminta otorisasi dari pengguna
     | `redirect_uri` | `string` | **Ya** | URL Callback yang terdaftar. |
     | `state` | `string` | **Ya** | String acak unik untuk keamanan CSRF. |
     | `scope` | `string` | Tidak | Ruang lingkup data (misal: `openid profile email`). |
+    | `code_challenge` | `string` | Opsional | Hash PKCE untuk proteksi authorization code (direkomendasikan). |
+    | `code_challenge_method` | `string` | Opsional | Metode hash PKCE, harus diisi dengan `S256` (jika menggunakan PKCE). |
 
 ---
 
@@ -23,7 +25,7 @@ Endpoint ini menampilkan halaman login SSO untuk meminta otorisasi dari pengguna
 Endpoint ini diakses secara internal oleh server aplikasi klien (backend) untuk menukar kode otorisasi menjadi token akses.
 
 *   **URL:** `POST /oauth2/token`
-*   **Content-Type:** `application/x-www-form-urlencoded`
+*   **Content-Type:** `application/x-www-form-urlencoded` (Wajib)
 *   **Body Parameters:**
     | Parameter | Tipe | Wajib | Keterangan |
     | :--- | :--- | :---: | :--- |
@@ -32,6 +34,7 @@ Endpoint ini diakses secara internal oleh server aplikasi klien (backend) untuk 
     | `client_id` | `string` | **Ya** | Client ID aplikasi Anda. |
     | `client_secret` | `string` | **Ya** | Client Secret aplikasi Anda. |
     | `redirect_uri` | `string` | **Ya** | URL Callback yang terdaftar. |
+    | `code_verifier` | `string` | Opsional | String verifier PKCE asli (wajib jika menyertakan `code_challenge` di langkah pertama). |
 
 *   **Response Sukses (200 OK):**
     ```json
