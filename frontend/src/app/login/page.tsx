@@ -23,13 +23,7 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
-                  <span>Loading form...</span>
-                </div>
-              }
-            >
+            <Suspense fallback={null}>
               <LoginForm />
             </Suspense>
           </div>

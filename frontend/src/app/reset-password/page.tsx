@@ -196,14 +196,7 @@ export default function ResetPasswordPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <Suspense
-              fallback={
-                <div className="flex flex-col items-center gap-2 text-slate-500 text-sm">
-                  <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
-                  <span>Mempersiapkan formulir atur ulang...</span>
-                </div>
-              }
-            >
+            <Suspense fallback={null}>
               <ResetPasswordForm />
             </Suspense>
           </div>
