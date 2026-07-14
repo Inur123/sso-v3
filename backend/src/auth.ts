@@ -316,6 +316,10 @@ export const auth = betterAuth({
     oauthProvider({
       loginPage: `${process.env.SSO_FRONTEND_URL}/login`,
       consentPage: `${process.env.SSO_FRONTEND_URL}/consent`,
+      storeClientSecret: {
+        hash: async (secret) => secret,
+        verify: async (secret, hash) => secret === hash,
+      },
     }),
     bearer(), // Mengaktifkan verifikasi header "Authorization: Bearer <token>" secara native
   ],
