@@ -26,6 +26,21 @@ const fastify = Fastify({
   },
 });
 
+// Registrasi Content Type Parser untuk application/x-www-form-urlencoded
+fastify.addContentTypeParser(
+  "application/x-www-form-urlencoded",
+  { parseAs: "string" },
+  (req, body, done) => {
+    try {
+      const parsed = Object.fromEntries(new URLSearchParams(body as string));
+      done(null, parsed);
+    } catch (err: any) {
+      err.statusCode = 400;
+      done(err, undefined);
+    }
+  }
+);
+
 // Registrasi Security HTTP Headers (Helmet)
 fastify.register(helmet, {
   contentSecurityPolicy: false, // Nonaktifkan CSP jika ingin mempermudah akses OIDC Metadata di browser
@@ -69,10 +84,20 @@ fastify.route({
     const url = new URL(request.url, `${protocol}://${request.headers.host}`);
     const headers = fromNodeHeaders(request.headers);
     
+    let requestBody: string | undefined = undefined;
+    if (request.body && request.method !== "GET") {
+      const contentType = request.headers["content-type"] || "";
+      if (contentType.includes("application/x-www-form-urlencoded")) {
+        requestBody = new URLSearchParams(request.body as any).toString();
+      } else {
+        requestBody = JSON.stringify(request.body);
+      }
+    }
+
     const webReq = new Request(url.toString(), {
       method: request.method,
       headers,
-      body: request.body && request.method !== "GET" ? JSON.stringify(request.body) : undefined,
+      body: requestBody,
     });
 
     const response = await auth.handler(webReq);
